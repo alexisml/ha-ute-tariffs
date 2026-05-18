@@ -1,0 +1,118 @@
+name: HA holidays compatibility check
+
+# Runs on every push and PR so that a version drift between our dev dep and the
+# version bundled with the latest Home Assistant release is caught early.
+#
+# Why: we removed 'holidays' from manifest.json so that HA provides it at
+# runtime (avoiding version conflicts with the core workday/holiday components).
+# Our pyproject.toml dev dep must stay in sync with what HA ships, otherwise
+# local tests run against a different version than production.
+#
+# Result: warns (does not fail) when our pin drifts from HA's pin, because
+# different version does not automatically mean the integration is broken —
+# it means a developer should install the new pin, run tests, and confirm.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Verify holidays dev-dep matches latest HA
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # 1. Resolve the latest *stable* HA release tag
+      # -----------------------------------------------------------------------
+      - name: Fetch latest stable HA release tag
+        id: ha_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(gh api repos/home-assistant/core/releases/latest --jq '.tag_name')
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Latest stable HA release: $TAG"
+
+      # -----------------------------------------------------------------------
+      # 2. Read the holidays pin from HA's workday manifest at that tag.
+      #    The workday component always carries an exact holidays== requirement.
+      # -----------------------------------------------------------------------
+      - name: Read holidays version from HA workday manifest
+        id: ha_holidays
+        run: |
+          TAG="${{ steps.ha_release.outputs.tag }}"
+          MANIFEST_URL="https://raw.githubusercontent.com/home-assistant/core/${TAG}/homeassistant/components/workday/manifest.json"
+          HA_VERSION=$(curl -sf \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "$MANIFEST_URL" \
+            | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          reqs = data.get('requirements', [])
+          pin = next((r for r in reqs if r.startswith('holidays==')), None)
+          print(pin.split('==')[1] if pin else '')
+          ")
+          if [ -z "$HA_VERSION" ]; then
+            echo "::error::Could not parse a holidays== requirement from HA $TAG workday manifest ($MANIFEST_URL)"
+            exit 1
+          fi
+          echo "version=$HA_VERSION" >> "$GITHUB_OUTPUT"
+          echo "HA $TAG pins holidays==$HA_VERSION"
+
+      # -----------------------------------------------------------------------
+      # 3. Read our own dev-dep pin from pyproject.toml
+      # -----------------------------------------------------------------------
+      - name: Read our pinned holidays version
+        id: our_holidays
+        run: |
+          OUR_VERSION=$(python3 - <<'EOF'
+          import re, pathlib, sys
+          text = pathlib.Path("pyproject.toml").read_text()
+          m = re.search(r'"holidays==([0-9]+\.[0-9]+(?:\.[0-9]+)?)"', text)
+          if not m:
+              print("", end="")
+              sys.exit(0)
+          print(m.group(1), end="")
+          EOF
+          )
+          if [ -z "$OUR_VERSION" ]; then
+            echo "::error::Could not find a holidays== pin in pyproject.toml [project.optional-dependencies] dev section"
+            exit 1
+          fi
+          echo "version=$OUR_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Our pyproject.toml pins holidays==$OUR_VERSION"
+
+      # -----------------------------------------------------------------------
+      # 4. Compare — warn (do not fail) if they diverge
+      # -----------------------------------------------------------------------
+      - name: Compare versions
+        env:
+          HA_TAG: ${{ steps.ha_release.outputs.tag }}
+          HA_VER: ${{ steps.ha_holidays.outputs.version }}
+          OUR_VER: ${{ steps.our_holidays.outputs.version }}
+        run: |
+          echo "──────────────────────────────────────────"
+          echo "  Latest HA ($HA_TAG)  →  holidays==$HA_VER"
+          echo "  Our dev dep          →  holidays==$OUR_VER"
+          echo "──────────────────────────────────────────"
+
+          if [ "$HA_VER" != "$OUR_VER" ]; then
+            echo "::warning file=pyproject.toml::holidays version mismatch: HA $HA_TAG ships holidays==$HA_VER but our dev dep pins holidays==$OUR_VER. Update the pin in pyproject.toml, run the test suite against the new version, then update the comment above the pin."
+            echo ""
+            echo "⚠️  Action required:"
+            echo "   1. In pyproject.toml, change  \"holidays==$OUR_VER\"  →  \"holidays==$HA_VER\""
+            echo "   2. Run: pip install -e .[dev] && pytest"
+            echo "   3. If all tests pass, commit the update."
+            echo "   4. If tests fail, investigate the breaking change in holidays $HA_VER."
+          else
+            echo "✅  holidays==$OUR_VER matches HA $HA_TAG — no action needed."
+          fi
