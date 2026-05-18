@@ -78,7 +78,7 @@ jobs:
         continue-on-error: true
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: 7107fdc2a20719f22bc6fe9f80eba710
+          gistID: 7de6801feff5497e0b488fa136d1035e
           filename: ute_tarifas_test_count.json
           label: Tests
           message: ${{ env.TEST_COUNT }} passed
@@ -90,7 +90,7 @@ jobs:
         continue-on-error: true
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: 7107fdc2a20719f22bc6fe9f80eba710
+          gistID: 7de6801feff5497e0b488fa136d1035e
           filename: ute_tarifas_loc.json
           label: Lines of code
           message: ${{ env.LOC }}
