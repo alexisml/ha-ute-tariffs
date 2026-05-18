@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 
 import holidays
 
-from .const import ContractType, TariffPeriod
+from .const import HOLIDAY_CACHE_MAX_SIZE, SCHEDULE_SCAN_DAYS, ContractType, TariffPeriod
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -282,7 +282,7 @@ class TariffCalculator:
         self._iva_rate = iva_rate
         # Cache holiday sets keyed by (country, year) to avoid reconstructing
         # the holidays object on every _is_holiday() call within a snapshot().
-        # Capped at _HOLIDAY_CACHE_MAX_SIZE entries (one per year in practice).
+        # Capped at HOLIDAY_CACHE_MAX_SIZE entries (one per year in practice).
         self._holiday_cache: dict[tuple[str, int], frozenset[date]] = {}
 
     @property
@@ -295,16 +295,12 @@ class TariffCalculator:
         """Update the monthly consumption estimate (e.g. read from an HA entity)."""
         self._monthly_kwh = value
 
-    # Maximum number of (country, year) entries kept in the holiday cache.
-    # In practice only 1–2 years are ever needed per HA instance lifetime.
-    _HOLIDAY_CACHE_MAX_SIZE = 5
-
     def _is_holiday(self, value: date) -> bool:
         if not self._use_national_holidays:
             return False
         key = (self._country, value.year)
         if key not in self._holiday_cache:
-            if len(self._holiday_cache) >= self._HOLIDAY_CACHE_MAX_SIZE:
+            if len(self._holiday_cache) >= HOLIDAY_CACHE_MAX_SIZE:
                 # Evict the oldest entry to keep the cache bounded.
                 self._holiday_cache.pop(next(iter(self._holiday_cache)))
             try:
@@ -363,10 +359,11 @@ class TariffCalculator:
 
         current_period = self._period_for_datetime(now)
         probe = now
-        # Scan forward up to 14 day-boundaries to find the next moment where the
-        # tariff period actually changes (skipping boundaries where the same period
-        # continues, e.g. Saturday→Sunday both all-llano on a DOUBLE contract).
-        for _ in range(14):
+        # Scan forward up to SCHEDULE_SCAN_DAYS day-boundaries to find the next
+        # moment where the tariff period actually changes (skipping boundaries
+        # where the same period continues, e.g. Saturday→Sunday both all-llano
+        # on a DOUBLE contract).
+        for _ in range(SCHEDULE_SCAN_DAYS):
             blocks = self._blocks_for_day(probe.date())
             next_boundary = min(_next_occurrence(probe, b.end) for b in blocks)
             next_period = self._period_for_datetime(next_boundary + timedelta(seconds=1))

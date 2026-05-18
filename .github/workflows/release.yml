@@ -2,6 +2,11 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      new_version:
+        description: 'New version to release (e.g. 1.2.0)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -17,12 +22,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Compute next version
+      - name: Bump version in manifest.json
         id: version
         run: |
-          VERSION=$(python3 -c "import json; print(json.load(open('custom_components/ute_tarifas/manifest.json'))['version'])")
+          VERSION="${{ inputs.new_version }}"
+          python3 - "$VERSION" <<'EOF'
+          import json, sys
+          path = "custom_components/ute_tarifas/manifest.json"
+          with open(path) as f:
+              data = json.load(f)
+          data["version"] = sys.argv[1]
+          with open(path, "w") as f:
+              json.dump(data, f, indent=2, ensure_ascii=False)
+              f.write("\n")
+          EOF
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Next version: $VERSION"
+          echo "Bumped manifest.json to $VERSION"
 
       - name: Create release branch and open PR
         env:
@@ -40,7 +55,13 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
           git add custom_components/ute_tarifas/manifest.json
-          git commit -m "Prepare release v$VERSION" || true
+
+          if git diff --cached --quiet; then
+            echo "::error::No changes staged — manifest.json already has version $VERSION on this branch."
+            exit 1
+          fi
+
+          git commit -m "Prepare release v$VERSION"
           git push origin "$BRANCH"
 
           gh pr create \

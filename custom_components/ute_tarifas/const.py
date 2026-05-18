@@ -20,6 +20,14 @@ DEFAULT_USE_NATIONAL_HOLIDAYS = True
 # IVA (Impuesto al Valor Agregado) rate applied to UTE tariffs in Uruguay.
 IVA_RATE = 0.22
 
+# Maximum number of (country, year) entries kept in the holiday cache.
+# In practice only 1-2 years are ever needed per HA instance lifetime.
+HOLIDAY_CACHE_MAX_SIZE = 5
+
+# Maximum number of day-boundaries to scan forward when looking for the next
+# tariff period change (e.g. skipping same-period weekend days).
+SCHEDULE_SCAN_DAYS = 14
+
 
 class ContractType(StrEnum):
     """Residential contract type supported by UTE."""
