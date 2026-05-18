@@ -11,15 +11,17 @@
           "schedule_weekend": "Weekend schedule override",
           "schedule_holiday": "Holiday schedule override",
           "country": "Holiday country code",
-          "use_national_holidays": "Apply national holidays"
+          "use_national_holidays": "Apply national holidays",
+          "monthly_kwh": "Estimated monthly consumption (kWh)"
         },
         "data_description": {
           "contract_type": "The UTE residential plan you are subscribed to (Simple, Double, or Triple).",
           "schedule_workday": "Leave blank to use the built-in UTE workday schedule. Custom format: HH:MM-HH:MM:period,… (periods: valle, llano, punta, simple).",
-          "schedule_weekend": "Leave blank to use the built-in UTE weekend schedule (all-valle on weekends).",
-          "schedule_holiday": "Leave blank to use the built-in UTE holiday schedule (all-valle on holidays).",
+          "schedule_weekend": "Leave blank to use the built-in UTE weekend schedule (all-llano on weekends for Double; all-valle for Triple).",
+          "schedule_holiday": "Leave blank to use the built-in UTE holiday schedule (all-llano for Double; all-valle for Triple).",
           "country": "ISO 3166-1 alpha-2 country code for national holiday detection. Default: UY.",
-          "use_national_holidays": "When enabled, national holidays follow the holiday schedule instead of the weekday schedule."
+          "use_national_holidays": "When enabled, national holidays follow the holiday schedule instead of the weekday schedule.",
+          "monthly_kwh": "Used only for the Simple contract to determine the consumption tier (0–100, 101–600, or 601+ kWh/month). Ignored for Double/Triple contracts."
         }
       }
     },
@@ -39,12 +41,14 @@
         "data": {
           "schedule_workday": "Workday schedule override",
           "schedule_weekend": "Weekend schedule override",
-          "schedule_holiday": "Holiday schedule override"
+          "schedule_holiday": "Holiday schedule override",
+          "monthly_kwh": "Estimated monthly consumption (kWh)"
         },
         "data_description": {
           "schedule_workday": "Leave blank to use the built-in UTE workday schedule.",
-          "schedule_weekend": "Leave blank to use the built-in UTE weekend schedule (all-valle).",
-          "schedule_holiday": "Leave blank to use the built-in UTE holiday schedule (all-valle)."
+          "schedule_weekend": "Leave blank to use the built-in UTE weekend schedule.",
+          "schedule_holiday": "Leave blank to use the built-in UTE holiday schedule.",
+          "monthly_kwh": "Used only for the Simple contract to determine the consumption tier (0–100, 101–600, or 601+ kWh/month). Ignored for Double/Triple contracts."
         }
       }
     },
@@ -55,7 +59,13 @@
   "entity": {
     "sensor": {
       "current_cost": {
-        "name": "Current Cost"
+        "name": "Current Cost (incl. IVA)"
+      },
+      "current_cost_excl_iva": {
+        "name": "Current Cost (excl. IVA)"
+      },
+      "iva_rate": {
+        "name": "IVA Rate"
       },
       "current_period": {
         "name": "Current Period",

@@ -106,23 +106,25 @@ wrap-around case:
 
 ```python
 # Block 22:00 – 00:00 (covers 22:00, 22:01, …, 23:59)
-TimeBlock(time(22, 0), time(0, 0), TariffPeriod.VALLE)
+TimeBlock(time(22, 0), time(0, 0), TariffPeriod.LLANO)
 ```
 
 The all-day sentinel `time(0, 0) – time(0, 0)` is used for SIMPLE contracts
-and all-valle weekend/holiday blocks — it always matches any time.
+and all-day weekend/holiday blocks — it always matches any time.
 
 ### Default workday blocks (built-in)
 
-**Double contract:**
+**Double contract (Doble Horario):**
 
 | Block | Period |
 |-------|--------|
-| 00:00 – 07:00 | Valle |
+| 00:00 – 07:00 | Llano |
 | 07:00 – 17:00 | Punta |
-| 17:00 – 00:00 | Valle |
+| 17:00 – 00:00 | Llano |
 
-**Triple contract:**
+Weekends and holidays are **all-llano** for Double.
+
+**Triple contract (Triple Horario):**
 
 | Block | Period |
 |-------|--------|
@@ -131,8 +133,7 @@ and all-valle weekend/holiday blocks — it always matches any time.
 | 17:00 – 21:00 | Punta |
 | 21:00 – 00:00 | Llano |
 
-Weekends and holidays are **all-valle** for both Double and Triple (standard
-UTE residential rule).
+Weekends and holidays are **all-valle** for Triple.
 
 ---
 
@@ -157,18 +158,51 @@ toggle.  The country code defaults to `UY` but can be changed to any ISO
 
 ---
 
-## The five sensors
+## Prices, IVA, and tiers
 
-| Key | Unit | Description |
-|-----|------|-------------|
-| `current_cost` | UYU/kWh | The price per kilowatt-hour right now. |
-| `current_period` | — | `valle`, `llano`, `punta`, or `simple`. |
-| `next_change` | timestamp | When the current period or pricing will change. |
-| `next_period` | — | The period that will be active after `next_change`. |
-| `contract_type` | — | `simple`, `double`, or `triple`. |
+All prices stored in `prices.py` are in **UYU/kWh excluding IVA** (Uruguay's
+22 % *Impuesto al Valor Agregado*).  The integration applies IVA automatically
+and exposes two cost sensors:
+
+| Sensor | Description |
+|--------|-------------|
+| `current_cost` | Price per kWh **including IVA** (22 %) — the figure on your electricity bill. |
+| `current_cost_excl_iva` | Raw price **excluding IVA** — diagnostic entity. |
+| `iva_rate` | Current IVA rate (22 %) — diagnostic entity. |
+
+### Simple contract tiers
+
+The *Simple* tariff has three consumption tiers (monthly kWh):
+
+| Tier | Threshold | Rate (excl. IVA) |
+|------|-----------|-----------------|
+| Low | 0 – 100 kWh/month | 6.744 UYU/kWh |
+| Mid | 101 – 600 kWh/month | 8.452 UYU/kWh |
+| High | 601+ kWh/month | 10.539 UYU/kWh |
+
+Configure your expected monthly consumption in the **Estimated monthly consumption (kWh)**
+field during setup (or update it in the options flow).  The integration selects the
+correct tier automatically.  For Double and Triple contracts this field is ignored.
+
+---
+
+## The seven sensors
+
+| Key | Category | Unit | Description |
+|-----|----------|------|-------------|
+| `current_cost` | — | UYU/kWh | Price per kWh right now, **including IVA**. |
+| `current_cost_excl_iva` | Diagnostic | UYU/kWh | Price per kWh right now, **excluding IVA**. |
+| `iva_rate` | Diagnostic | % | IVA rate applied (22 %). |
+| `current_period` | — | — | `valle`, `llano`, `punta`, or `simple`. |
+| `next_change` | — | timestamp | When the current period or pricing will next change. |
+| `next_period` | — | — | The period that will be active after `next_change`. |
+| `contract_type` | — | — | `simple`, `double`, or `triple`. |
 
 `next_change` takes whichever is **earliest** — the next time-of-use block
-boundary *or* a future pricing/schedule update encoded in `prices.py`.
+boundary where the period actually changes *or* a future pricing/schedule update
+encoded in `prices.py`.  Boundaries where the same period continues (e.g.
+Saturday→Sunday both all-llano) are skipped so the sensor only surfaces
+meaningful changes.
 
 All sensors belong to a single **UTE Tarifas** device in HA, grouped under
 `manufacturer: UTE, model: Residential Tariff`.

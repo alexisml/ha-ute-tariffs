@@ -12,10 +12,11 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfEnergy
+from homeassistant.const import PERCENTAGE, UnitOfEnergy
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_registry import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -36,6 +37,22 @@ SENSOR_TYPES: list[UteTarifasSensorDescription] = [
         native_unit_of_measurement=f"UYU/{UnitOfEnergy.KILO_WATT_HOUR}",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda payload: payload.snapshot.current_cost,
+    ),
+    UteTarifasSensorDescription(
+        key="current_cost_excl_iva",
+        translation_key="current_cost_excl_iva",
+        native_unit_of_measurement=f"UYU/{UnitOfEnergy.KILO_WATT_HOUR}",
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda payload: payload.snapshot.current_cost_excl_iva,
+    ),
+    UteTarifasSensorDescription(
+        key="iva_rate",
+        translation_key="iva_rate",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda payload: round(payload.snapshot.iva_rate * 100, 1),
     ),
     UteTarifasSensorDescription(
         key="current_period",

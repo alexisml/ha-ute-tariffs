@@ -47,17 +47,22 @@ _SIMPLE_ALL_DAY: list[TimeBlock] = [
     TimeBlock(time(0, 0), time(0, 0), TariffPeriod.SIMPLE),
 ]
 
-# Weekends and holidays are all-valle for both DOUBLE and TRIPLE contracts
-# (standard UTE residential rule).
+# DOUBLE (Doble Horario) off-peak is LLANO; weekends and holidays are all-llano.
+_LLANO_ALL_DAY: list[TimeBlock] = [
+    TimeBlock(time(0, 0), time(0, 0), TariffPeriod.LLANO),
+]
+
+# TRIPLE (Triple Horario) weekends and holidays are all-valle (cheapest tier).
 _VALLE_ALL_DAY: list[TimeBlock] = [
     TimeBlock(time(0, 0), time(0, 0), TariffPeriod.VALLE),
 ]
 
+# Doble Horario workday: llano (00:00–07:00, 17:00–24:00) and punta (07:00–17:00).
 _DOUBLE_WORKDAY: list[TimeBlock] = [
-    TimeBlock(time(0, 0), time(7, 0), TariffPeriod.VALLE),
+    TimeBlock(time(0, 0), time(7, 0), TariffPeriod.LLANO),
     TimeBlock(time(7, 0), time(17, 0), TariffPeriod.PUNTA),
     # end=time(0, 0) is the "until midnight" sentinel; see _contains() in tariff.py
-    TimeBlock(time(17, 0), time(0, 0), TariffPeriod.VALLE),
+    TimeBlock(time(17, 0), time(0, 0), TariffPeriod.LLANO),
 ]
 
 _TRIPLE_WORKDAY: list[TimeBlock] = [
@@ -74,19 +79,27 @@ _TRIPLE_WORKDAY: list[TimeBlock] = [
 # Each entry covers [start, end] inclusive (both bounds are part of the range).
 # Keep past entries so that historical date queries remain meaningful.
 #
-# Rates are in UYU/kWh.  Source: https://www.ute.com.uy/Tarifas
+# All prices are in UYU/kWh **excluding IVA** (22 %).
+# Source: https://www.ute.com.uy/Tarifas
+#
+# Simple contract has three consumption tiers (monthly kWh thresholds):
+#   simple_low  — first 100 kWh/month
+#   simple_mid  — 101–600 kWh/month
+#   simple_high — 601+ kWh/month
 
 UTE_PRICE_RANGES: list[PriceRange] = [
     # Valid from 2026-01-01 — update end date when a new entry is added
     PriceRange(
         start=date(2026, 1, 1),
         end=date(2099, 12, 31),
-        simple=8.5,
-        double_valle=6.0,
-        double_punta=12.0,
-        triple_valle=4.5,
-        triple_llano=8.0,
-        triple_punta=13.0,
+        simple_low=6.744,
+        simple_mid=8.452,
+        simple_high=10.539,
+        double_llano=4.771,
+        double_punta=12.034,
+        triple_valle=2.443,
+        triple_llano=5.172,
+        triple_punta=12.034,
     ),
 ]
 
@@ -111,8 +124,8 @@ UTE_SCHEDULE_RANGES: dict[ContractType, list[ScheduleRange]] = {
             start=date(2000, 1, 1),
             end=date(2099, 12, 31),
             workday_blocks=_DOUBLE_WORKDAY,
-            weekend_blocks=_VALLE_ALL_DAY,
-            holiday_blocks=_VALLE_ALL_DAY,
+            weekend_blocks=_LLANO_ALL_DAY,
+            holiday_blocks=_LLANO_ALL_DAY,
         ),
     ],
     ContractType.TRIPLE: [

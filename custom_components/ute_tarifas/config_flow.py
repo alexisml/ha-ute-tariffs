@@ -12,11 +12,13 @@ from homeassistant.data_entry_flow import FlowResult
 from .const import (
     CONF_CONTRACT_TYPE,
     CONF_COUNTRY,
+    CONF_MONTHLY_KWH,
     CONF_SCHEDULE_HOLIDAY,
     CONF_SCHEDULE_WEEKEND,
     CONF_SCHEDULE_WORKDAY,
     CONF_USE_NATIONAL_HOLIDAYS,
     DEFAULT_COUNTRY,
+    DEFAULT_MONTHLY_KWH,
     DEFAULT_USE_NATIONAL_HOLIDAYS,
     DOMAIN,
     ContractType,
@@ -30,9 +32,7 @@ def _default_period_for(contract_type: str) -> TariffPeriod:
     ct = ContractType(contract_type)
     if ct == ContractType.SIMPLE:
         return TariffPeriod.SIMPLE
-    if ct == ContractType.TRIPLE:
-        return TariffPeriod.LLANO
-    return TariffPeriod.VALLE
+    return TariffPeriod.LLANO  # DOUBLE and TRIPLE both use llano as off-peak/default
 
 
 def _validate_schedule(raw: str, default_period: TariffPeriod) -> str | None:
@@ -100,6 +100,7 @@ class UteTarifasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_SCHEDULE_HOLIDAY: user_input.get(CONF_SCHEDULE_HOLIDAY, "").strip(),
                         CONF_COUNTRY: country,
                         CONF_USE_NATIONAL_HOLIDAYS: user_input[CONF_USE_NATIONAL_HOLIDAYS],
+                        CONF_MONTHLY_KWH: user_input.get(CONF_MONTHLY_KWH, DEFAULT_MONTHLY_KWH),
                     },
                 )
 
@@ -119,6 +120,10 @@ class UteTarifasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_USE_NATIONAL_HOLIDAYS,
                         default=DEFAULT_USE_NATIONAL_HOLIDAYS,
                     ): bool,
+                    vol.Optional(
+                        CONF_MONTHLY_KWH,
+                        default=DEFAULT_MONTHLY_KWH,
+                    ): vol.All(int, vol.Range(min=0)),
                 }
             ),
         )
@@ -163,16 +168,21 @@ class UteTarifasOptionsFlow(config_entries.OptionsFlow):
                         CONF_SCHEDULE_WORKDAY: user_input.get(CONF_SCHEDULE_WORKDAY, "").strip(),
                         CONF_SCHEDULE_WEEKEND: user_input.get(CONF_SCHEDULE_WEEKEND, "").strip(),
                         CONF_SCHEDULE_HOLIDAY: user_input.get(CONF_SCHEDULE_HOLIDAY, "").strip(),
+                        CONF_MONTHLY_KWH: user_input.get(CONF_MONTHLY_KWH, DEFAULT_MONTHLY_KWH),
                     },
                 )
 
-        def _default(key: str) -> str:
+        def _default(key: str) -> object:
             return options.get(key, data.get(key, ""))
 
         schema = {
             vol.Optional(CONF_SCHEDULE_WORKDAY, default=_default(CONF_SCHEDULE_WORKDAY)): str,
             vol.Optional(CONF_SCHEDULE_WEEKEND, default=_default(CONF_SCHEDULE_WEEKEND)): str,
             vol.Optional(CONF_SCHEDULE_HOLIDAY, default=_default(CONF_SCHEDULE_HOLIDAY)): str,
+            vol.Optional(
+                CONF_MONTHLY_KWH,
+                default=_default(CONF_MONTHLY_KWH) or DEFAULT_MONTHLY_KWH,
+            ): vol.All(int, vol.Range(min=0)),
         }
         return self.async_show_form(
             step_id="init",

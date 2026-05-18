@@ -53,7 +53,17 @@ class ScheduleRange:
 
 @dataclass(frozen=True)
 class PriceRange:
-    """Price set (UYU/kWh per period) valid within a date interval.
+    """Price set (UYU/kWh per period, **excluding IVA**) valid within a date interval.
+
+    All prices are stored without IVA.  The coordinator applies :data:`IVA_RATE` to
+    produce the IVA-inclusive cost exposed to Home Assistant sensors.
+
+    For the *Simple* contract three consumption tiers exist (monthly kWh thresholds
+    from UTE's published tariff schedule):
+
+    * ``simple_low``  — first 100 kWh/month
+    * ``simple_mid``  — 101–600 kWh/month
+    * ``simple_high`` — 601+ kWh/month
 
     To update prices, add a new entry to ``UTE_PRICE_RANGES`` in
     ``prices.py`` and close the previous one.
@@ -61,8 +71,10 @@ class PriceRange:
 
     start: date
     end: date
-    simple: float
-    double_valle: float
+    simple_low: float
+    simple_mid: float
+    simple_high: float
+    double_llano: float
     double_punta: float
     triple_valle: float
     triple_llano: float
@@ -71,10 +83,19 @@ class PriceRange:
 
 @dataclass(frozen=True)
 class TariffSnapshot:
-    """Point-in-time tariff result returned by :meth:`TariffCalculator.snapshot`."""
+    """Point-in-time tariff result returned by :meth:`TariffCalculator.snapshot`.
+
+    ``current_cost`` is the IVA-inclusive price in UYU/kWh — this is the value
+    exposed to Home Assistant as the primary cost sensor.
+    ``current_cost_excl_iva`` is the raw price stored in ``prices.py`` (without IVA)
+    and is exposed as a diagnostic sensor.
+    ``iva_rate`` is the fractional IVA rate applied (e.g. ``0.22`` for 22%).
+    """
 
     current_period: TariffPeriod
+    current_cost_excl_iva: float
     current_cost: float
+    iva_rate: float
     next_change_at: datetime
     next_period: TariffPeriod
 
@@ -201,12 +222,16 @@ class TariffCalculator:
         schedule_ranges: list[ScheduleRange],
         country: str = "UY",
         use_national_holidays: bool = True,
+        monthly_kwh: int = 350,
+        iva_rate: float = 0.22,
     ) -> None:
         self._contract_type = contract_type
         self._price_ranges = sorted(price_ranges, key=lambda p: p.start)
         self._schedule_ranges = sorted(schedule_ranges, key=lambda s: s.start)
         self._country = country
         self._use_national_holidays = use_national_holidays
+        self._monthly_kwh = monthly_kwh
+        self._iva_rate = iva_rate
         # Cache holiday sets keyed by (country, year) to avoid reconstructing
         # the holidays object on every _is_holiday() call within a snapshot().
         # Capped at _HOLIDAY_CACHE_MAX_SIZE entries (one per year in practice).
@@ -260,9 +285,13 @@ class TariffCalculator:
 
     def _price_for_period(self, period: TariffPeriod, price: PriceRange) -> float:
         if self._contract_type == ContractType.SIMPLE:
-            return price.simple
+            if self._monthly_kwh <= 100:
+                return price.simple_low
+            if self._monthly_kwh <= 600:
+                return price.simple_mid
+            return price.simple_high
         if self._contract_type == ContractType.DOUBLE:
-            return price.double_punta if period == TariffPeriod.PUNTA else price.double_valle
+            return price.double_punta if period == TariffPeriod.PUNTA else price.double_llano
         if period == TariffPeriod.VALLE:
             return price.triple_valle
         if period == TariffPeriod.PUNTA:
@@ -274,13 +303,25 @@ class TariffCalculator:
             tomorrow = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
             return tomorrow, TariffPeriod.SIMPLE
 
+        current_period = self._period_for_datetime(now)
+        probe = now
+        # Scan forward up to 14 day-boundaries to find the next moment where the
+        # tariff period actually changes (skipping boundaries where the same period
+        # continues, e.g. Saturday→Sunday both all-llano on a DOUBLE contract).
+        for _ in range(14):
+            blocks = self._blocks_for_day(probe.date())
+            next_boundary = min(_next_occurrence(probe, b.end) for b in blocks)
+            next_period = self._period_for_datetime(next_boundary + timedelta(seconds=1))
+            if next_period != current_period:
+                return next_boundary, next_period
+            # Same period continues — advance past this boundary and keep scanning.
+            probe = next_boundary
+
+        # Safety fallback (should not be reached with valid UTE schedules).
         blocks = self._blocks_for_day(now.date())
-        candidates: list[tuple[datetime, TariffPeriod]] = [
-            (_next_occurrence(now, block.end), block.period) for block in blocks
-        ]
-        next_change_at, _ = min(candidates, key=lambda item: item[0])
-        next_period = self._period_for_datetime(next_change_at + timedelta(seconds=1))
-        return next_change_at, next_period
+        next_boundary = min(_next_occurrence(now, b.end) for b in blocks)
+        next_period = self._period_for_datetime(next_boundary + timedelta(seconds=1))
+        return next_boundary, next_period
 
     def _next_tariff_data_change(self, now: datetime) -> datetime | None:
         """Return the soonest future datetime when either prices or the schedule changes.
@@ -307,11 +348,15 @@ class TariffCalculator:
         detection, and date-range comparisons all use the correct UY
         calendar date and wall-clock hour — regardless of the timezone
         configured on the Home Assistant server.
+
+        ``current_cost`` is the IVA-inclusive price; ``current_cost_excl_iva``
+        is the raw price stored in ``prices.py`` (without IVA).
         """
         now = now.astimezone(UY_TZ)
         period = self._period_for_datetime(now)
         active_price = _active_price_range(now.date(), self._price_ranges)
-        cost = self._price_for_period(period, active_price)
+        cost_excl_iva = self._price_for_period(period, active_price)
+        cost_incl_iva = cost_excl_iva * (1 + self._iva_rate)
 
         schedule_change_at, schedule_next_period = self._next_schedule_change(now)
         next_tariff_data_change = self._next_tariff_data_change(now)
@@ -320,14 +365,18 @@ class TariffCalculator:
             next_period = self._period_for_datetime(next_tariff_data_change + timedelta(seconds=1))
             return TariffSnapshot(
                 current_period=period,
-                current_cost=cost,
+                current_cost_excl_iva=cost_excl_iva,
+                current_cost=cost_incl_iva,
+                iva_rate=self._iva_rate,
                 next_change_at=next_tariff_data_change,
                 next_period=next_period,
             )
 
         return TariffSnapshot(
             current_period=period,
-            current_cost=cost,
+            current_cost_excl_iva=cost_excl_iva,
+            current_cost=cost_incl_iva,
+            iva_rate=self._iva_rate,
             next_change_at=schedule_change_at,
             next_period=schedule_next_period,
         )

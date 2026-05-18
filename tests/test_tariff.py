@@ -28,14 +28,15 @@ _UTC = ZoneInfo("UTC")
 # Helpers
 # ---------------------------------------------------------------------------
 
-
 def _price_ranges() -> list[PriceRange]:
     return [
         PriceRange(
             start=date(2026, 1, 1),
             end=date(2026, 5, 31),
-            simple=7.0,
-            double_valle=5.0,
+            simple_low=5.0,
+            simple_mid=7.0,
+            simple_high=9.0,
+            double_llano=5.0,
             double_punta=9.0,
             triple_valle=4.0,
             triple_llano=6.0,
@@ -44,8 +45,10 @@ def _price_ranges() -> list[PriceRange]:
         PriceRange(
             start=date(2026, 6, 1),
             end=date(2026, 12, 31),
-            simple=8.0,
-            double_valle=6.0,
+            simple_low=6.0,
+            simple_mid=8.0,
+            simple_high=10.0,
+            double_llano=6.0,
             double_punta=11.0,
             triple_valle=5.0,
             triple_llano=7.0,
@@ -187,7 +190,7 @@ def test_next_occurrence_midnight_target() -> None:
 
 def test_active_price_range_found() -> None:
     pr = _active_price_range(date(2026, 3, 15), _price_ranges())
-    assert pr.simple == 7.0
+    assert pr.simple_mid == 7.0
 
 
 def test_active_price_range_not_found_raises() -> None:
@@ -229,7 +232,7 @@ def test_simple_contract_returns_simple_period_and_cost() -> None:
     snap = calc.snapshot(datetime(2026, 4, 10, 18, 30, tzinfo=_UY))
 
     assert snap.current_period == TariffPeriod.SIMPLE
-    assert snap.current_cost == 7.0
+    assert snap.current_cost_excl_iva == 7.0  # simple_mid, monthly_kwh=350 (default)
     assert snap.next_period == TariffPeriod.SIMPLE
     assert snap.next_change_at == datetime(2026, 4, 11, 0, 0, tzinfo=_UY)
 
@@ -246,6 +249,49 @@ def test_simple_contract_next_change_is_price_range_start_if_sooner() -> None:
     assert snap.next_period == TariffPeriod.SIMPLE
 
 
+def test_simple_contract_tier_selection() -> None:
+    """monthly_kwh drives tier selection for the Simple contract."""
+    pr = _price_ranges()
+
+    low = TariffCalculator(
+        contract_type=ContractType.SIMPLE,
+        price_ranges=pr,
+        schedule_ranges=_all_day_schedule(TariffPeriod.SIMPLE),
+        monthly_kwh=80,
+    )
+    mid = TariffCalculator(
+        contract_type=ContractType.SIMPLE,
+        price_ranges=pr,
+        schedule_ranges=_all_day_schedule(TariffPeriod.SIMPLE),
+        monthly_kwh=350,
+    )
+    high = TariffCalculator(
+        contract_type=ContractType.SIMPLE,
+        price_ranges=pr,
+        schedule_ranges=_all_day_schedule(TariffPeriod.SIMPLE),
+        monthly_kwh=800,
+    )
+
+    ts = datetime(2026, 4, 10, 12, 0, tzinfo=_UY)
+    assert low.snapshot(ts).current_cost_excl_iva == 5.0   # simple_low
+    assert mid.snapshot(ts).current_cost_excl_iva == 7.0   # simple_mid
+    assert high.snapshot(ts).current_cost_excl_iva == 9.0  # simple_high
+    # Boundary at exactly 100 kWh → still low tier
+    assert TariffCalculator(
+        contract_type=ContractType.SIMPLE,
+        price_ranges=pr,
+        schedule_ranges=_all_day_schedule(TariffPeriod.SIMPLE),
+        monthly_kwh=100,
+    ).snapshot(ts).current_cost_excl_iva == 5.0
+    # 101 kWh → mid tier
+    assert TariffCalculator(
+        contract_type=ContractType.SIMPLE,
+        price_ranges=pr,
+        schedule_ranges=_all_day_schedule(TariffPeriod.SIMPLE),
+        monthly_kwh=101,
+    ).snapshot(ts).current_cost_excl_iva == 7.0
+
+
 # ---------------------------------------------------------------------------
 # TariffCalculator — DOUBLE contract
 # ---------------------------------------------------------------------------
@@ -256,32 +302,32 @@ def test_double_contract_uses_schedule_blocks() -> None:
         contract_type=ContractType.DOUBLE,
         price_ranges=_price_ranges(),
         schedule_ranges=_make_schedule(
-            "00:00-08:00:valle,08:00-22:00:punta,22:00-00:00:valle",
-            dp=TariffPeriod.VALLE,
+            "00:00-08:00:llano,08:00-22:00:punta,22:00-00:00:llano",
+            dp=TariffPeriod.LLANO,
         ),
     )
     # 2026-04-06 is a Monday (workday), 09:00 → punta block
     snap = calc.snapshot(datetime(2026, 4, 6, 9, 0, tzinfo=_UY))
 
     assert snap.current_period == TariffPeriod.PUNTA
-    assert snap.current_cost == 9.0
-    assert snap.next_period == TariffPeriod.VALLE
+    assert snap.current_cost_excl_iva == 9.0
+    assert snap.next_period == TariffPeriod.LLANO
     assert snap.next_change_at == datetime(2026, 4, 6, 22, 0, tzinfo=_UY)
 
 
-def test_double_contract_weekend_is_all_valle() -> None:
+def test_double_contract_weekend_is_all_llano() -> None:
     calc = TariffCalculator(
         contract_type=ContractType.DOUBLE,
         price_ranges=_price_ranges(),
         schedule_ranges=_make_schedule(
-            "00:00-08:00:valle,08:00-22:00:punta,22:00-00:00:valle",
-            weekend_raw="00:00-00:00:valle",
-            dp=TariffPeriod.VALLE,
+            "00:00-08:00:llano,08:00-22:00:punta,22:00-00:00:llano",
+            weekend_raw="00:00-00:00:llano",
+            dp=TariffPeriod.LLANO,
         ),
     )
-    # 2026-04-11 is Saturday
+    # 2026-04-11 is Saturday — all-llano
     snap = calc.snapshot(datetime(2026, 4, 11, 10, 0, tzinfo=_UY))
-    assert snap.current_period == TariffPeriod.VALLE
+    assert snap.current_period == TariffPeriod.LLANO
 
 
 def test_double_contract_uses_canonical_defaults() -> None:
@@ -317,7 +363,7 @@ def test_triple_contract_detects_holiday_schedule() -> None:
     snap = calc.snapshot(datetime(2026, 5, 1, 10, 0, tzinfo=_UY))
 
     assert snap.current_period == TariffPeriod.VALLE
-    assert snap.current_cost == 4.0
+    assert snap.current_cost_excl_iva == 4.0
 
 
 def test_triple_contract_uses_canonical_defaults() -> None:
@@ -378,8 +424,10 @@ def test_next_tariff_data_change_returns_none_when_no_future_ranges() -> None:
         PriceRange(
             start=date(2026, 1, 1),
             end=date(2099, 12, 31),
-            simple=7.0,
-            double_valle=5.0,
+            simple_low=5.0,
+            simple_mid=7.0,
+            simple_high=9.0,
+            double_llano=5.0,
             double_punta=9.0,
             triple_valle=4.0,
             triple_llano=6.0,
@@ -390,8 +438,8 @@ def test_next_tariff_data_change_returns_none_when_no_future_ranges() -> None:
         contract_type=ContractType.DOUBLE,
         price_ranges=single_range,
         schedule_ranges=_make_schedule(
-            "00:00-08:00:valle,08:00-22:00:punta,22:00-00:00:valle",
-            dp=TariffPeriod.VALLE,
+            "00:00-08:00:llano,08:00-22:00:punta,22:00-00:00:llano",
+            dp=TariffPeriod.LLANO,
         ),
     )
     snap = calc.snapshot(datetime(2026, 4, 6, 9, 0, tzinfo=_UY))
@@ -457,8 +505,10 @@ def test_schedule_range_transition_on_boundary_date() -> None:
             PriceRange(
                 start=date(2026, 1, 1),
                 end=date(2099, 12, 31),
-                simple=7.0,
-                double_valle=5.0,
+                simple_low=5.0,
+                simple_mid=7.0,
+                simple_high=9.0,
+                double_llano=5.0,
                 double_punta=9.0,
                 triple_valle=4.0,
                 triple_llano=6.0,
@@ -472,7 +522,12 @@ def test_schedule_range_transition_on_boundary_date() -> None:
 
 
 def test_next_change_at_reports_upcoming_schedule_range_start() -> None:
-    """next_change_at should surface a future ScheduleRange boundary."""
+    """next_change_at skips non-real boundaries and surfaces the next actual period change.
+
+    With the scan-forward fix, the calculator skips midnight June 30 (same PUNTA period
+    continues) and directly reports the ScheduleRange transition at July 1 00:00 where the
+    period changes from PUNTA to VALLE.
+    """
     current_block = [TimeBlock(time(0, 0), time(0, 0), TariffPeriod.PUNTA)]
     future_block = [TimeBlock(time(0, 0), time(0, 0), TariffPeriod.VALLE)]
     schedule_ranges = [
@@ -497,8 +552,10 @@ def test_next_change_at_reports_upcoming_schedule_range_start() -> None:
             PriceRange(
                 start=date(2026, 1, 1),
                 end=date(2099, 12, 31),
-                simple=7.0,
-                double_valle=5.0,
+                simple_low=5.0,
+                simple_mid=7.0,
+                simple_high=9.0,
+                double_llano=5.0,
                 double_punta=9.0,
                 triple_valle=4.0,
                 triple_llano=6.0,
@@ -508,10 +565,10 @@ def test_next_change_at_reports_upcoming_schedule_range_start() -> None:
         schedule_ranges=schedule_ranges,
     )
     snap = calc.snapshot(datetime(2026, 6, 29, 12, 0, tzinfo=_UY))
-    # The all-day block's next boundary is midnight (June 30 00:00), which is before the
-    # ScheduleRange transition at July 1 00:00.  The calculator correctly fires at June 30
-    # midnight; on that re-evaluation it will surface July 1 as the next data change.
-    assert snap.next_change_at == datetime(2026, 6, 30, 0, 0, tzinfo=_UY)
+    # Scan-forward skips the non-real June 30 midnight boundary (still PUNTA) and
+    # directly reports the ScheduleRange transition at July 1 00:00 (PUNTA → VALLE).
+    assert snap.next_change_at == datetime(2026, 7, 1, 0, 0, tzinfo=_UY)
+    assert snap.next_period == TariffPeriod.VALLE
 
 
 # ---------------------------------------------------------------------------
@@ -526,8 +583,10 @@ def test_raises_without_active_price_range() -> None:
             PriceRange(
                 start=date(2026, 1, 1),
                 end=date(2026, 1, 31),
-                simple=7.0,
-                double_valle=5.0,
+                simple_low=5.0,
+                simple_mid=7.0,
+                simple_high=9.0,
+                double_llano=5.0,
                 double_punta=9.0,
                 triple_valle=4.0,
                 triple_llano=6.0,
@@ -570,24 +629,27 @@ def test_utc_datetime_near_midnight_resolves_using_uy_date() -> None:
     """01:00 UTC on a Tuesday is 22:00 Monday in UY (UTC-3).
 
     A double-tariff calculator with a punta block 08:00-22:00 on workdays
-    should report VALLE at 22:00 UY (Monday evening), not look at Tuesday.
+    should report LLANO at 22:00 UY (Monday evening), not look at Tuesday.
+    With the scan-forward fix, the next real change is Tuesday 08:00 when PUNTA
+    starts — not midnight (where the same LLANO period continues on Tuesday).
     """
     calc = TariffCalculator(
         contract_type=ContractType.DOUBLE,
         price_ranges=_price_ranges(),
         schedule_ranges=_make_schedule(
-            "00:00-08:00:valle,08:00-22:00:punta,22:00-00:00:valle",
-            dp=TariffPeriod.VALLE,
+            "00:00-08:00:llano,08:00-22:00:punta,22:00-00:00:llano",
+            dp=TariffPeriod.LLANO,
         ),
     )
 
     # 2026-04-07 01:00 UTC  ==  2026-04-06 22:00 UY (Monday evening, workday)
     snap = calc.snapshot(datetime(2026, 4, 7, 1, 0, tzinfo=_UTC))
 
-    assert snap.current_period == TariffPeriod.VALLE
-    # Next change is midnight UY (start of 2026-04-07 in UY)
-    assert snap.next_change_at == datetime(2026, 4, 7, 0, 0, tzinfo=_UY)
-    assert snap.next_period == TariffPeriod.VALLE
+    assert snap.current_period == TariffPeriod.LLANO
+    # Scan-forward skips midnight (LLANO continues on Tuesday 00:00–08:00)
+    # and returns the next REAL change: Tuesday 08:00 when PUNTA starts.
+    assert snap.next_change_at == datetime(2026, 4, 7, 8, 0, tzinfo=_UY)
+    assert snap.next_period == TariffPeriod.PUNTA
 
 
 def test_utc_datetime_determines_holiday_in_uy_calendar() -> None:
@@ -614,6 +676,94 @@ def test_utc_datetime_determines_holiday_in_uy_calendar() -> None:
     # 2026-05-01 03:00 UTC  ==  2026-05-01 00:00 UY (May 1, national holiday → valle)
     snap_holiday = calc.snapshot(datetime(2026, 5, 1, 3, 0, tzinfo=_UTC))
     assert snap_holiday.current_period == TariffPeriod.VALLE
+
+
+# ---------------------------------------------------------------------------
+# IVA calculation
+# ---------------------------------------------------------------------------
+
+
+def test_snapshot_includes_iva_in_current_cost() -> None:
+    """current_cost must be current_cost_excl_iva * (1 + iva_rate)."""
+    calc = TariffCalculator(
+        contract_type=ContractType.TRIPLE,
+        price_ranges=_price_ranges(),
+        schedule_ranges=_make_schedule(
+            "00:00-07:00:valle,07:00-17:00:llano,17:00-21:00:punta,21:00-00:00:llano",
+            dp=TariffPeriod.LLANO,
+        ),
+        iva_rate=0.22,
+    )
+    snap = calc.snapshot(datetime(2026, 4, 6, 10, 0, tzinfo=_UY))  # Monday 10:00 → llano
+    assert snap.iva_rate == 0.22
+    assert snap.current_cost_excl_iva == 6.0  # triple_llano from first price range
+    assert abs(snap.current_cost - 6.0 * 1.22) < 1e-9
+
+
+def test_snapshot_iva_rate_zero_means_no_markup() -> None:
+    """iva_rate=0 makes current_cost equal to current_cost_excl_iva."""
+    calc = TariffCalculator(
+        contract_type=ContractType.DOUBLE,
+        price_ranges=_price_ranges(),
+        schedule_ranges=_make_schedule(
+            "00:00-08:00:llano,08:00-22:00:punta,22:00-00:00:llano",
+            dp=TariffPeriod.LLANO,
+        ),
+        iva_rate=0.0,
+    )
+    snap = calc.snapshot(datetime(2026, 4, 6, 9, 0, tzinfo=_UY))  # Monday 09:00 → punta
+    assert snap.current_cost_excl_iva == 9.0
+    assert snap.current_cost == 9.0
+
+
+# ---------------------------------------------------------------------------
+# _next_schedule_change — weekend-to-workday transition
+# ---------------------------------------------------------------------------
+
+
+def test_next_change_skips_same_period_weekend_boundaries() -> None:
+    """Saturday→Sunday boundary must be skipped; next REAL change is Monday 00:00 (TRIPLE).
+
+    In a TRIPLE contract, both Saturday and Sunday are all-valle.  The scan-forward
+    fix should skip the Saturday midnight boundary (still valle on Sunday) and return
+    Monday 00:00 when the first workday block (LLANO) starts.
+    """
+    calc = TariffCalculator(
+        contract_type=ContractType.TRIPLE,
+        price_ranges=_price_ranges(),
+        schedule_ranges=_make_schedule(
+            "00:00-07:00:valle,07:00-17:00:llano,17:00-21:00:punta,21:00-00:00:llano",
+            weekend_raw="00:00-00:00:valle",
+            dp=TariffPeriod.LLANO,
+        ),
+    )
+    # 2026-04-11 is Saturday at 15:00 → all-valle
+    snap = calc.snapshot(datetime(2026, 4, 11, 15, 0, tzinfo=_UY))
+    assert snap.current_period == TariffPeriod.VALLE
+    # Skip Saturday midnight (Sunday is also all-valle), then skip Sunday midnight
+    # (Monday 00:00–07:00 is also VALLE per workday blocks).
+    # Next REAL change: Monday 07:00 when LLANO starts.
+    assert snap.next_change_at == datetime(2026, 4, 13, 7, 0, tzinfo=_UY)
+    assert snap.next_period == TariffPeriod.LLANO
+
+
+def test_next_change_double_weekend_to_workday() -> None:
+    """DOUBLE: Saturday all-llano should skip Sunday; next change at Monday 07:00 → PUNTA."""
+    calc = TariffCalculator(
+        contract_type=ContractType.DOUBLE,
+        price_ranges=_price_ranges(),
+        schedule_ranges=_make_schedule(
+            "00:00-07:00:llano,07:00-17:00:punta,17:00-00:00:llano",
+            weekend_raw="00:00-00:00:llano",
+            dp=TariffPeriod.LLANO,
+        ),
+    )
+    # 2026-04-12 is Sunday at 20:00 → all-llano
+    snap = calc.snapshot(datetime(2026, 4, 12, 20, 0, tzinfo=_UY))
+    assert snap.current_period == TariffPeriod.LLANO
+    # Sunday midnight → Monday 00:00–07:00 still LLANO → skip to Monday 07:00 → PUNTA
+    assert snap.next_change_at == datetime(2026, 4, 13, 7, 0, tzinfo=_UY)
+    assert snap.next_period == TariffPeriod.PUNTA
 
 
 # ---------------------------------------------------------------------------
@@ -644,4 +794,3 @@ def test_is_holiday_invalid_country_returns_false(caplog: pytest.LogCaptureFixtu
 
     assert snap.current_period == TariffPeriod.LLANO
     assert any("XX" in message for message in caplog.messages)
-

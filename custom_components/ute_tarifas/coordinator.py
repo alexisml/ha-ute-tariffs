@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .const import ContractType, TariffPeriod
+from .const import DEFAULT_MONTHLY_KWH, IVA_RATE, ContractType, TariffPeriod
 from .prices import UTE_PRICE_RANGES, UTE_SCHEDULE_RANGES
 from .tariff import (
     ScheduleRange,
@@ -31,17 +31,17 @@ class CoordinatorPayload:
 
 
 def _default_period(contract_type: ContractType) -> TariffPeriod:
-    """Return the default :class:`TariffPeriod` used as a block fallback.
+    """Return a sensible :class:`TariffPeriod` to pass as ``default_period`` to
+    :func:`parse_blocks`.
 
-    When a user supplies a partial custom schedule (e.g. workday only), this
-    value fills in the ``default_period`` for any unspecified segment, ensuring
-    ``parse_blocks("")`` produces a sensible all-day block instead of an error.
+    Note: :func:`_build_schedule_ranges` only calls :func:`parse_blocks` when the override
+    string is non-empty, so ``parse_blocks`` will not use this fallback for the blank-string
+    case.  This helper is retained so a sensible per-contract default is available if the
+    calling code is ever extended to accept partially-specified strings.
     """
     if contract_type == ContractType.SIMPLE:
         return TariffPeriod.SIMPLE
-    if contract_type == ContractType.TRIPLE:
-        return TariffPeriod.LLANO
-    return TariffPeriod.VALLE
+    return TariffPeriod.LLANO  # DOUBLE and TRIPLE both use llano as off-peak/default
 
 
 def _build_schedule_ranges(
@@ -121,6 +121,8 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
             ),
             country=config.get("country", "UY"),
             use_national_holidays=config.get("use_national_holidays", True),
+            monthly_kwh=config.get("monthly_kwh", DEFAULT_MONTHLY_KWH),
+            iva_rate=IVA_RATE,
         )
         self._contract_type = contract_type
 

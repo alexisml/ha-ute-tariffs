@@ -35,7 +35,7 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # -----------------------------------------------------------------------
       # 1. Resolve the latest *stable* HA release tag

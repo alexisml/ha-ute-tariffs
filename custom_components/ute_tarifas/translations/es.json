@@ -11,15 +11,17 @@
           "schedule_weekend": "Horario personalizado fin de semana",
           "schedule_holiday": "Horario personalizado feriados",
           "country": "Código de país para feriados",
-          "use_national_holidays": "Aplicar feriados nacionales"
+          "use_national_holidays": "Aplicar feriados nacionales",
+          "monthly_kwh": "Consumo mensual estimado (kWh)"
         },
         "data_description": {
           "contract_type": "El plan residencial de UTE al que estás suscripto (Simple, Doble o Triple).",
           "schedule_workday": "Dejá en blanco para usar el horario estándar de UTE en días hábiles. Formato personalizado: HH:MM-HH:MM:período,… (períodos: valle, llano, punta, simple).",
-          "schedule_weekend": "Dejá en blanco para usar el horario estándar de UTE los fines de semana (todo valle).",
-          "schedule_holiday": "Dejá en blanco para usar el horario estándar de UTE en feriados (todo valle).",
+          "schedule_weekend": "Dejá en blanco para usar el horario estándar de UTE los fines de semana (todo llano para Doble; todo valle para Triple).",
+          "schedule_holiday": "Dejá en blanco para usar el horario estándar de UTE en feriados (todo llano para Doble; todo valle para Triple).",
           "country": "Código de país ISO 3166-1 alfa-2 para detectar feriados nacionales. Por defecto: UY.",
-          "use_national_holidays": "Cuando está activado, los feriados nacionales usan el horario de feriados en lugar del horario de días hábiles."
+          "use_national_holidays": "Cuando está activado, los feriados nacionales usan el horario de feriados en lugar del horario de días hábiles.",
+          "monthly_kwh": "Solo se usa para el contrato Simple para determinar el tramo de consumo (0–100, 101–600 o 601+ kWh/mes). Se ignora para contratos Doble/Triple."
         }
       }
     },
@@ -39,12 +41,14 @@
         "data": {
           "schedule_workday": "Horario personalizado días hábiles",
           "schedule_weekend": "Horario personalizado fin de semana",
-          "schedule_holiday": "Horario personalizado feriados"
+          "schedule_holiday": "Horario personalizado feriados",
+          "monthly_kwh": "Consumo mensual estimado (kWh)"
         },
         "data_description": {
           "schedule_workday": "Dejá en blanco para usar el horario estándar de UTE en días hábiles.",
-          "schedule_weekend": "Dejá en blanco para usar el horario estándar de UTE los fines de semana (todo valle).",
-          "schedule_holiday": "Dejá en blanco para usar el horario estándar de UTE en feriados (todo valle)."
+          "schedule_weekend": "Dejá en blanco para usar el horario estándar de UTE los fines de semana.",
+          "schedule_holiday": "Dejá en blanco para usar el horario estándar de UTE en feriados.",
+          "monthly_kwh": "Solo se usa para el contrato Simple para determinar el tramo de consumo (0–100, 101–600 o 601+ kWh/mes). Se ignora para contratos Doble/Triple."
         }
       }
     },
@@ -55,7 +59,13 @@
   "entity": {
     "sensor": {
       "current_cost": {
-        "name": "Costo actual"
+        "name": "Costo actual (con IVA)"
+      },
+      "current_cost_excl_iva": {
+        "name": "Costo actual (sin IVA)"
+      },
+      "iva_rate": {
+        "name": "Tasa de IVA"
       },
       "current_period": {
         "name": "Período actual",
