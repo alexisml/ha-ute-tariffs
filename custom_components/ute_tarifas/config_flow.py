@@ -31,7 +31,9 @@ def _default_period_for(contract_type: str) -> TariffPeriod:
     ct = ContractType(contract_type)
     if ct == ContractType.SIMPLE:
         return TariffPeriod.SIMPLE
-    return TariffPeriod.LLANO  # DOUBLE and TRIPLE both use llano as off-peak/default
+    if ct == ContractType.DOUBLE:
+        return TariffPeriod.LLANO
+    return TariffPeriod.VALLE
 
 
 def _validate_schedule(raw: str, default_period: TariffPeriod) -> str | None:

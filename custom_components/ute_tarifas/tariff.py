@@ -129,6 +129,9 @@ def parse_blocks(raw: str, *, default_period: TariffPeriod) -> list[TimeBlock]:
     An empty *raw* string returns a single all-day block using
     *default_period*.  ``end=time(0, 0)`` is the "until midnight" sentinel
     handled by the wrap-around logic in :func:`_contains`.
+
+    For non-empty strings, blocks must cover the full 24-hour day without
+    gaps or overlaps.
     """
     if not raw.strip():
         return [TimeBlock(time(0, 0), time(0, 0), default_period)]
@@ -138,8 +141,11 @@ def parse_blocks(raw: str, *, default_period: TariffPeriod) -> list[TimeBlock]:
         segment = segment.strip()
         if not segment:
             continue
-        window, period_raw = segment.rsplit(":", maxsplit=1)
-        start_raw, end_raw = window.split("-", maxsplit=1)
+        try:
+            window, period_raw = segment.rsplit(":", maxsplit=1)
+            start_raw, end_raw = window.split("-", maxsplit=1)
+        except ValueError as exc:
+            raise ValueError(f"Invalid schedule block format: {segment!r}") from exc
         blocks.append(
             TimeBlock(
                 start=_parse_time(start_raw.strip()),
@@ -151,7 +157,39 @@ def parse_blocks(raw: str, *, default_period: TariffPeriod) -> list[TimeBlock]:
     if not blocks:
         raise ValueError("Schedule must contain at least one block")
 
+    _validate_full_day_coverage(blocks)
     return blocks
+
+
+def _validate_full_day_coverage(blocks: list[TimeBlock]) -> None:
+    """Ensure parsed blocks cover the full day exactly once."""
+    intervals: list[tuple[int, int]] = []
+    for block in blocks:
+        start = block.start.hour * 60 + block.start.minute
+        end = block.end.hour * 60 + block.end.minute
+
+        if start == end:
+            intervals.append((0, 24 * 60))
+            continue
+        if end == 0:
+            end = 24 * 60
+
+        if start < end:
+            intervals.append((start, end))
+        else:
+            intervals.append((start, 24 * 60))
+            intervals.append((0, end))
+
+    cursor = 0
+    for start, end in sorted(intervals):
+        if start > cursor:
+            raise ValueError("Schedule must cover the full day without gaps")
+        if start < cursor:
+            raise ValueError("Schedule blocks must not overlap")
+        cursor = end
+
+    if cursor != 24 * 60:
+        raise ValueError("Schedule must cover the full day without gaps")
 
 
 def _contains(block: TimeBlock, current: time) -> bool:

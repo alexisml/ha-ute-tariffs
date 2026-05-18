@@ -1,5 +1,7 @@
 # UTE Tarifas
 
+![UTE logo](https://brands.home-assistant.io/_/ute/icon.png)
+
 **HACS custom integration — residential UTE contracts only.**
 
 Exposes five Home Assistant sensors that track the current UTE electricity
@@ -190,4 +192,3 @@ Licensed under the [Apache 2.0 License](LICENSE).
 
 UTE is a trademark of Administración Nacional de Usinas y Trasmisiones
 Eléctricas (UTE).  This project is not affiliated with or endorsed by UTE.
-
