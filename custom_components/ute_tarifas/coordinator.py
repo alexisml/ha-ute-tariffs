@@ -152,14 +152,25 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
                 try:
                     self._calculator.monthly_kwh = int(float(state.state))
                 except (ValueError, TypeError):
-                    _LOGGER.warning(
-                        "Could not parse monthly consumption from entity %s (state=%r); "
-                        "falling back to cheapest Simple tier (Simple contract only — "
-                        "ignored for Double/Triple)",
-                        self._monthly_kwh_entity,
-                        state.state,
-                    )
+                    if state.state != self._last_bad_monthly_state:
+                        _LOGGER.warning(
+                            "Could not parse monthly consumption from entity %s (state=%r); "
+                            "falling back to cheapest Simple tier (Simple contract only — "
+                            "ignored for Double/Triple)",
+                            self._monthly_kwh_entity,
+                            state.state,
+                        )
+                        self._last_bad_monthly_state = state.state
+                    else:
+                        _LOGGER.debug(
+                            "Monthly consumption entity %s still non-numeric (state=%r); "
+                            "using cheapest Simple tier",
+                            self._monthly_kwh_entity,
+                            state.state,
+                        )
                     self._calculator.monthly_kwh = 0
+                else:
+                    self._last_bad_monthly_state = None
             else:
                 self._calculator.monthly_kwh = 0
         try:
