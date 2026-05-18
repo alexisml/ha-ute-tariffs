@@ -41,10 +41,10 @@ flowchart TD
     PF --> COST
 
     PD --> NS["_next_schedule_change()\nNext block boundary"]
-    SF --> ND["_next_tariff_data_change()\nNext prices.py boundary"]
+    SF --> NTC["_next_tariff_data_change()\nNext prices.py boundary"]
 
     NS --> CMP{"Which is\nearlier?"}
-    ND --> CMP
+    NTC --> CMP
 
     CMP -->|schedule change| SNAP["TariffSnapshot\ncurrent_period, current_cost\nnext_change_at, next_period"]
     CMP -->|data change| SNAP

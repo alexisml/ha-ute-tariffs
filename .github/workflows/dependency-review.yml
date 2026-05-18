@@ -17,3 +17,4 @@ jobs:
 
       - name: Dependency Review
         uses: actions/dependency-review-action@v5
+        continue-on-error: true  # requires Dependency Graph to be enabled in repo settings
