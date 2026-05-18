@@ -45,14 +45,22 @@ _BRANCH_SLUG_TRIM = re.compile(r"^-+|-+$")
 
 
 def get_existing_tags() -> list[str]:
-    """Return all git tags in the repository."""
+    """Return all git tags in the repository.
+
+    Raises ``SystemExit`` if the ``git tag`` command fails so that callers
+    never proceed with an incomplete tag list and risk reusing an already
+    published version.
+    """
     result = subprocess.run(
         ["git", "tag", "--list", "v*"],
         capture_output=True,
         text=True,
         check=False,
     )
-    return result.stdout.strip().splitlines() if result.returncode == 0 else []
+    if result.returncode != 0:
+        print(f"git tag --list failed:\n{result.stderr.strip()}", file=sys.stderr)
+        sys.exit(result.returncode)
+    return result.stdout.strip().splitlines()
 
 
 def next_version() -> str:
@@ -88,16 +96,27 @@ def branch_slug(branch: str) -> str:
     matching the regular release ``TAG_PATTERN`` (``vYYYY.M.N``) and
     polluting the release counter.
 
+    Raises ``ValueError`` if the branch name contains no ASCII alphanumeric
+    characters (e.g. a name consisting entirely of underscores or non-ASCII
+    characters), since that would produce an empty slug and an invalid tag.
+
     Examples::
 
         branch_slug("feature/my-work")  -> "feature-my-work"
         branch_slug("fix/some_bug")     -> "fix-some-bug"
         branch_slug("main")             -> "main"
         branch_slug("123")              -> "prerelease-123"
+        branch_slug("___")              -> raises ValueError
     """
     slug = branch.lower().replace("/", "-")
     slug = _BRANCH_SLUG_STRIP.sub("-", slug)
     slug = _BRANCH_SLUG_TRIM.sub("", slug)
+    if not slug:
+        msg = (
+            f"Branch name {branch!r} produces an empty slug after sanitization. "
+            "Rename the branch to include at least one ASCII alphanumeric character."
+        )
+        raise ValueError(msg)
     if slug.isdigit():
         slug = f"prerelease-{slug}"
     return slug
