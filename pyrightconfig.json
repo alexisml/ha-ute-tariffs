@@ -1,0 +1,11 @@
+{
+  "typeCheckingMode": "basic",
+  "reportMissingImports": false,
+  "include": [
+    "custom_components",
+    "tests"
+  ],
+  "exclude": [
+    "custom_components/ute_tarifas/config_flow.py"
+  ]
+}

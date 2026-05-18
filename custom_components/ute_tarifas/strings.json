@@ -1,0 +1,31 @@
+{
+  "title": "UTE Tarifas",
+  "config": {
+    "step": {
+      "user": {
+        "title": "UTE Tarifas (Residential)",
+        "description": "Track UTE residential kWh prices by contract, schedule and holidays.",
+        "data": {
+          "contract_type": "Residential contract type",
+          "schedule_workday": "Workday schedule (HH:MM-HH:MM:period,...)",
+          "schedule_weekend": "Weekend schedule (HH:MM-HH:MM:period,...)",
+          "schedule_holiday": "Holiday schedule (HH:MM-HH:MM:period,...)",
+          "country": "Country code for holidays",
+          "use_national_holidays": "Use national holidays"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Update schedule",
+        "data": {
+          "schedule_workday": "Workday schedule",
+          "schedule_weekend": "Weekend schedule",
+          "schedule_holiday": "Holiday schedule"
+        }
+      }
+    }
+  }
+}

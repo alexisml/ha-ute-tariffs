@@ -1,0 +1,9 @@
+{
+  "name": "UTE Tarifas",
+  "country": "UY",
+  "homeassistant": "2024.6.0",
+  "render_readme": true,
+  "domains": [
+    "sensor"
+  ]
+}

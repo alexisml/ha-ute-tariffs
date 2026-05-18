@@ -1,0 +1,29 @@
+[project]
+name = "ute-tarifas"
+version = "0.1.0"
+description = "Home Assistant custom integration for UTE residential tariffs"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "holidays==0.74",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.5",
+  "pytest-cov==6.1.1",
+  "pyright==1.1.408",
+  "ruff==0.11.13",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--cov=custom_components.ute_tarifas.tariff --cov-report=term-missing --cov-fail-under=90"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

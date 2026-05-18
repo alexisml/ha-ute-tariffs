@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Create Release PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Compute next version
+        id: version
+        run: |
+          VERSION=$(python3 -c "import json; print(json.load(open('custom_components/ute_tarifas/manifest.json'))['version'])")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Next version: $VERSION"
+
+      - name: Create release branch and open PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          BRANCH="release/v${VERSION}"
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null 2>&1; then
+            echo "::warning::Branch $BRANCH already exists — a release PR for $VERSION is already open. No new PR was created."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add custom_components/ute_tarifas/manifest.json
+          git commit -m "Prepare release v$VERSION" || true
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "Bump version to $VERSION" \
+            --body "Automated version bump to \`$VERSION\` for release. Merging this PR will trigger the publish workflow to tag and create the GitHub Release." \
+            --base main \
+            --head "$BRANCH"
