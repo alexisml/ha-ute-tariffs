@@ -4,30 +4,20 @@
     "step": {
       "user": {
         "title": "UTE Tarifas",
-        "description": "Set up residential UTE tariff tracking. Prices and schedules are maintained in the integration and update automatically — leave schedule fields blank to use the built-in UTE defaults.",
+        "description": "Set up residential UTE tariff tracking. Prices and schedules are maintained in the integration and update automatically.",
         "data": {
           "contract_type": "Residential contract type",
-          "schedule_workday": "Workday schedule override",
-          "schedule_weekend": "Weekend schedule override",
-          "schedule_holiday": "Holiday schedule override",
-          "country": "Holiday country code",
+          "punta_schedule": "Punta (peak) window",
           "use_national_holidays": "Apply national holidays",
           "monthly_kwh_entity": "Monthly consumption entity (optional)"
         },
         "data_description": {
           "contract_type": "The UTE residential plan you are subscribed to (Simple, Double, or Triple).",
-          "schedule_workday": "Leave blank to use the built-in UTE workday schedule (punta 18:00–22:00). Custom format: HH:MM-HH:MM:period,… (periods: valle, llano, punta, simple).",
-          "schedule_weekend": "Leave blank to use the built-in UTE weekend schedule (all-llano on weekends for Double; all-valle for Triple).",
-          "schedule_holiday": "Leave blank to use the built-in UTE holiday schedule (all-llano for Double; all-valle for Triple).",
-          "country": "ISO 3166-1 alpha-2 country code for national holiday detection. Default: UY.",
-          "use_national_holidays": "When enabled, national holidays follow the holiday schedule instead of the weekday schedule.",
+          "punta_schedule": "Peak-rate window for Double and Triple contracts. Select the 4-hour block that matches your UTE plan (default: 18:00–22:00).",
+          "use_national_holidays": "When enabled, national holidays use the weekend/off-peak schedule instead of the workday schedule.",
           "monthly_kwh_entity": "Entity ID of a sensor that reports monthly kWh consumption (e.g. a utility meter). Used only for the Simple contract to select the consumption tier. If left blank or unavailable, the low tier (0–100 kWh/month) is used."
         }
       }
-    },
-    "error": {
-      "invalid_schedule": "Invalid schedule format. Expected HH:MM-HH:MM:period,… — for example: 00:00-18:00:llano,18:00-22:00:punta,22:00-00:00:llano",
-      "invalid_country": "Unsupported country code. Use a valid ISO 3166-1 alpha-2 code (e.g. UY, AR, BR)."
     },
     "abort": {
       "already_configured": "UTE Tarifas is already configured."
@@ -36,26 +26,18 @@
   "options": {
     "step": {
       "init": {
-        "title": "Update schedule overrides",
-        "description": "Clear a field to revert to the built-in canonical UTE schedule for that day type.",
+        "title": "UTE Tarifas options",
         "data": {
-          "schedule_workday": "Workday schedule override",
-          "schedule_weekend": "Weekend schedule override",
-          "schedule_holiday": "Holiday schedule override",
+          "punta_schedule": "Punta (peak) window",
           "monthly_kwh_entity": "Monthly consumption entity (optional)",
           "use_national_holidays": "Apply national holidays"
         },
         "data_description": {
-          "schedule_workday": "Leave blank to use the built-in UTE workday schedule.",
-          "schedule_weekend": "Leave blank to use the built-in UTE weekend schedule.",
-          "schedule_holiday": "Leave blank to use the built-in UTE holiday schedule.",
+          "punta_schedule": "Peak-rate window for Double and Triple contracts (default: 18:00–22:00).",
           "monthly_kwh_entity": "Entity ID of a sensor that reports monthly kWh consumption. If left blank or unavailable, the cheapest Simple tier is used.",
-          "use_national_holidays": "When enabled, national holidays follow the holiday schedule instead of the weekday schedule."
+          "use_national_holidays": "When enabled, national holidays use the weekend/off-peak schedule instead of the workday schedule."
         }
       }
-    },
-    "error": {
-      "invalid_schedule": "Invalid schedule format. Expected HH:MM-HH:MM:period,… — for example: 00:00-18:00:llano,18:00-22:00:punta,22:00-00:00:llano"
     }
   },
   "entity": {

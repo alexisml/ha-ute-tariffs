@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import time, timedelta
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -12,13 +12,11 @@ from homeassistant.util import dt as dt_util
 
 from .const import (
     CONF_CONTRACT_TYPE,
-    CONF_COUNTRY,
     CONF_MONTHLY_KWH_ENTITY,
-    CONF_SCHEDULE_HOLIDAY,
-    CONF_SCHEDULE_WEEKEND,
-    CONF_SCHEDULE_WORKDAY,
+    CONF_PUNTA_SCHEDULE,
     CONF_USE_NATIONAL_HOLIDAYS,
     DEFAULT_COUNTRY,
+    DEFAULT_PUNTA_SCHEDULE,
     DEFAULT_USE_NATIONAL_HOLIDAYS,
     IVA_RATE,
     ContractType,
@@ -29,7 +27,7 @@ from .tariff import (
     ScheduleRange,
     TariffCalculator,
     TariffSnapshot,
-    parse_blocks,
+    TimeBlock,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,70 +41,58 @@ class CoordinatorPayload:
     contract_type: ContractType
 
 
-def _default_period(contract_type: ContractType) -> TariffPeriod:
-    """Return a sensible :class:`TariffPeriod` to pass as ``default_period`` to
-    :func:`parse_blocks`.
-
-    Note: :func:`_build_schedule_ranges` only calls :func:`parse_blocks` when the override
-    string is non-empty, so ``parse_blocks`` will not use this fallback for the blank-string
-    case.  This helper is retained so a sensible per-contract default is available if the
-    calling code is ever extended to accept partially-specified strings.
-    """
-    if contract_type == ContractType.SIMPLE:
-        return TariffPeriod.SIMPLE
-    if contract_type == ContractType.DOUBLE:
-        return TariffPeriod.LLANO
-    return TariffPeriod.VALLE
-
-
 def _build_schedule_ranges(
     contract_type: ContractType,
-    custom_workday: str,
-    custom_weekend: str,
-    custom_holiday: str,
+    punta_schedule: str,
 ) -> list[ScheduleRange]:
     """Build the :class:`ScheduleRange` list for :class:`TariffCalculator`.
 
-    When all three override strings are blank, returns the canonical
-    date-bounded list from ``prices.py`` so that any future schedule changes
-    encoded there take effect automatically without user action.
-
-    When at least one override is provided, each canonical :class:`ScheduleRange`
-    is preserved with its original date bounds.  Only the day-types that have a
-    custom string are replaced; blank day-types keep the canonical blocks from
-    that range.  This ensures future schedule updates in ``prices.py`` continue
-    to apply even when partial overrides are active.
+    Uses the canonical UTE schedules from ``prices.py`` as the base.  When
+    *punta_schedule* differs from the canonical 18:00–22:00 window, the
+    workday punta block is replaced for Double and Triple contracts.
+    Simple contracts are not affected (no punta period).
     """
     canonical_ranges = UTE_SCHEDULE_RANGES[contract_type]
 
-    wd = custom_workday.strip()
-    we = custom_weekend.strip()
-    hd = custom_holiday.strip()
-
-    if not (wd or we or hd):
+    if contract_type == ContractType.SIMPLE:
         return canonical_ranges
 
-    dp = _default_period(contract_type)
+    # Parse punta start hour from "HH-HH" format (e.g. "18-22" → 18).
+    try:
+        punta_start_hour = int(punta_schedule.split("-")[0])
+    except (ValueError, IndexError, AttributeError):
+        punta_start_hour = 18  # fall back to canonical
+
+    if punta_start_hour == 18:
+        return canonical_ranges
+
+    t_punta_start = time(punta_start_hour, 0)
+    # punta options are 17, 18, 19 — adding 4 always yields a valid hour (≤23).
+    t_punta_end = time(punta_start_hour + 4, 0)
+
+    if contract_type == ContractType.DOUBLE:
+        workday_blocks: list[TimeBlock] = [
+            TimeBlock(time(0, 0), t_punta_start, TariffPeriod.LLANO),
+            TimeBlock(t_punta_start, t_punta_end, TariffPeriod.PUNTA),
+            # end=time(0, 0) is the "until midnight" sentinel; see _contains() in tariff.py
+            TimeBlock(t_punta_end, time(0, 0), TariffPeriod.LLANO),
+        ]
+    else:  # TRIPLE
+        workday_blocks = [
+            TimeBlock(time(0, 0), time(7, 0), TariffPeriod.VALLE),
+            TimeBlock(time(7, 0), t_punta_start, TariffPeriod.LLANO),
+            TimeBlock(t_punta_start, t_punta_end, TariffPeriod.PUNTA),
+            # end=time(0, 0) is the "until midnight" sentinel; see _contains() in tariff.py
+            TimeBlock(t_punta_end, time(0, 0), TariffPeriod.LLANO),
+        ]
 
     return [
         ScheduleRange(
             start=canonical.start,
             end=canonical.end,
-            workday_blocks=(
-                parse_blocks(wd, default_period=dp)
-                if wd
-                else canonical.workday_blocks
-            ),
-            weekend_blocks=(
-                parse_blocks(we, default_period=dp)
-                if we
-                else canonical.weekend_blocks
-            ),
-            holiday_blocks=(
-                parse_blocks(hd, default_period=dp)
-                if hd
-                else canonical.holiday_blocks
-            ),
+            workday_blocks=workday_blocks,
+            weekend_blocks=canonical.weekend_blocks,
+            holiday_blocks=canonical.holiday_blocks,
         )
         for canonical in canonical_ranges
     ]
@@ -119,8 +105,9 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
     a :class:`CoordinatorPayload` consumed by all UTE sensor entities.
 
     Prices and schedules are read from ``prices.py`` (the single source of
-    truth).  Custom schedule overrides can be set via the options flow and are
-    merged with the canonical data in :func:`_build_schedule_ranges`.
+    truth).  The punta window can be adjusted via the options flow; all other
+    schedule details (weekend/holiday all-llano or all-valle) follow the
+    canonical UTE rules.
     """
 
     def __init__(self, hass: HomeAssistant, config: dict) -> None:
@@ -131,11 +118,9 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
             price_ranges=UTE_PRICE_RANGES,
             schedule_ranges=_build_schedule_ranges(
                 contract_type,
-                config.get(CONF_SCHEDULE_WORKDAY, ""),
-                config.get(CONF_SCHEDULE_WEEKEND, ""),
-                config.get(CONF_SCHEDULE_HOLIDAY, ""),
+                config.get(CONF_PUNTA_SCHEDULE, DEFAULT_PUNTA_SCHEDULE),
             ),
-            country=config.get(CONF_COUNTRY, DEFAULT_COUNTRY),
+            country=DEFAULT_COUNTRY,
             use_national_holidays=config.get(
                 CONF_USE_NATIONAL_HOLIDAYS, DEFAULT_USE_NATIONAL_HOLIDAYS
             ),
