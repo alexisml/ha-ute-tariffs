@@ -160,8 +160,9 @@ class UteTarifasOptionsFlow(config_entries.OptionsFlow):
                 return self.async_create_entry(
                     title="",
                     data={
-                        k: v.strip() if isinstance(v, str) else v
-                        for k, v in user_input.items()
+                        CONF_SCHEDULE_WORKDAY: user_input.get(CONF_SCHEDULE_WORKDAY, "").strip(),
+                        CONF_SCHEDULE_WEEKEND: user_input.get(CONF_SCHEDULE_WEEKEND, "").strip(),
+                        CONF_SCHEDULE_HOLIDAY: user_input.get(CONF_SCHEDULE_HOLIDAY, "").strip(),
                     },
                 )
 
