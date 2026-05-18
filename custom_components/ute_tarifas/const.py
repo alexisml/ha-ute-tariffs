@@ -7,7 +7,6 @@ from enum import StrEnum
 DOMAIN = "ute_tarifas"
 
 CONF_CONTRACT_TYPE = "contract_type"
-CONF_PRICE_RANGES = "price_ranges"
 CONF_SCHEDULE_WORKDAY = "schedule_workday"
 CONF_SCHEDULE_WEEKEND = "schedule_weekend"
 CONF_SCHEDULE_HOLIDAY = "schedule_holiday"

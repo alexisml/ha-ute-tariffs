@@ -6,11 +6,11 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.data_entry_flow import FlowResult
 
 from .const import (
     CONF_CONTRACT_TYPE,
     CONF_COUNTRY,
-    CONF_PRICE_RANGES,
     CONF_SCHEDULE_HOLIDAY,
     CONF_SCHEDULE_WEEKEND,
     CONF_SCHEDULE_WORKDAY,
@@ -19,45 +19,73 @@ from .const import (
     DEFAULT_USE_NATIONAL_HOLIDAYS,
     DOMAIN,
     ContractType,
+    TariffPeriod,
 )
+from .tariff import parse_blocks
 
-DEFAULT_PRICE_RANGE = [
-    {
-        "start": "2026-01-01",
-        "end": "2099-12-31",
-        "simple": 8.5,
-        "double_valle": 6.0,
-        "double_punta": 12.0,
-        "triple_valle": 4.5,
-        "triple_llano": 8.0,
-        "triple_punta": 13.0,
-    }
-]
+
+def _default_period_for(contract_type: str) -> TariffPeriod:
+    """Return the baseline period used when validating a schedule string."""
+    ct = ContractType(contract_type)
+    if ct == ContractType.SIMPLE:
+        return TariffPeriod.SIMPLE
+    if ct == ContractType.TRIPLE:
+        return TariffPeriod.LLANO
+    return TariffPeriod.VALLE
+
+
+def _validate_schedule(raw: str, default_period: TariffPeriod) -> str | None:
+    """Return an error key when *raw* is not a valid schedule string, else ``None``."""
+    if not raw.strip():
+        return None
+    try:
+        parse_blocks(raw, default_period=default_period)
+    except (ValueError, KeyError):
+        return "invalid_schedule"
+    return None
 
 
 class UteTarifasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for UTE Tarifas."""
+    """Handle the initial config flow for UTE Tarifas.
+
+    Only one instance of the integration may be configured at a time —
+    ``async_set_unique_id`` + ``_abort_if_unique_id_configured`` enforce this.
+    """
 
     VERSION = 1
 
-    async def async_step_user(self, user_input: dict[str, Any] | None = None):
-        """Handle user setup."""
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle the first (and only) setup step."""
+        await self.async_set_unique_id(DOMAIN)
+        self._abort_if_unique_id_configured()
+
+        errors: dict[str, str] = {}
+
         if user_input is not None:
-            return self.async_create_entry(
-                title="UTE Tarifas (Residential)",
-                data={
-                    CONF_CONTRACT_TYPE: user_input[CONF_CONTRACT_TYPE],
-                    CONF_PRICE_RANGES: DEFAULT_PRICE_RANGE,
-                    CONF_SCHEDULE_WORKDAY: user_input.get(CONF_SCHEDULE_WORKDAY, ""),
-                    CONF_SCHEDULE_WEEKEND: user_input.get(CONF_SCHEDULE_WEEKEND, ""),
-                    CONF_SCHEDULE_HOLIDAY: user_input.get(CONF_SCHEDULE_HOLIDAY, ""),
-                    CONF_COUNTRY: user_input[CONF_COUNTRY],
-                    CONF_USE_NATIONAL_HOLIDAYS: user_input[CONF_USE_NATIONAL_HOLIDAYS],
-                },
-            )
+            dp = _default_period_for(user_input[CONF_CONTRACT_TYPE])
+            for field in (CONF_SCHEDULE_WORKDAY, CONF_SCHEDULE_WEEKEND, CONF_SCHEDULE_HOLIDAY):
+                err = _validate_schedule(user_input.get(field, ""), dp)
+                if err:
+                    errors[field] = err
+
+            if not errors:
+                return self.async_create_entry(
+                    title="UTE Tarifas",
+                    data={
+                        CONF_CONTRACT_TYPE: user_input[CONF_CONTRACT_TYPE],
+                        CONF_SCHEDULE_WORKDAY: user_input.get(CONF_SCHEDULE_WORKDAY, ""),
+                        CONF_SCHEDULE_WEEKEND: user_input.get(CONF_SCHEDULE_WEEKEND, ""),
+                        CONF_SCHEDULE_HOLIDAY: user_input.get(CONF_SCHEDULE_HOLIDAY, ""),
+                        CONF_COUNTRY: user_input[CONF_COUNTRY],
+                        CONF_USE_NATIONAL_HOLIDAYS: user_input[CONF_USE_NATIONAL_HOLIDAYS],
+                    },
+                )
 
         return self.async_show_form(
             step_id="user",
+            errors=errors,
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_CONTRACT_TYPE, default=ContractType.SIMPLE): vol.In(
@@ -76,50 +104,51 @@ class UteTarifasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     @staticmethod
-    def async_get_options_flow(config_entry):
-        """Get options flow."""
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> UteTarifasOptionsFlow:
+        """Return the options flow handler."""
         return UteTarifasOptionsFlow(config_entry)
 
 
 class UteTarifasOptionsFlow(config_entries.OptionsFlow):
-    """Handle options flow."""
+    """Allow the user to update schedule overrides after initial setup.
 
-    def __init__(self, config_entry) -> None:
+    Clearing a schedule field reverts that day type to the built-in canonical
+    UTE schedule defined in ``prices.py``.
+    """
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         self.config_entry = config_entry
 
-    async def async_step_init(self, user_input: dict[str, Any] | None = None):
-        """Manage options."""
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
-
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Show and process the schedule-override form."""
+        errors: dict[str, str] = {}
         data = self.config_entry.data
         options = self.config_entry.options
+        dp = _default_period_for(data.get(CONF_CONTRACT_TYPE, ContractType.SIMPLE))
 
+        if user_input is not None:
+            for field in (CONF_SCHEDULE_WORKDAY, CONF_SCHEDULE_WEEKEND, CONF_SCHEDULE_HOLIDAY):
+                err = _validate_schedule(user_input.get(field, ""), dp)
+                if err:
+                    errors[field] = err
+
+            if not errors:
+                return self.async_create_entry(title="", data=user_input)
+
+        def _default(key: str) -> str:
+            return options.get(key, data.get(key, ""))
+
+        schema = {
+            vol.Optional(CONF_SCHEDULE_WORKDAY, default=_default(CONF_SCHEDULE_WORKDAY)): str,
+            vol.Optional(CONF_SCHEDULE_WEEKEND, default=_default(CONF_SCHEDULE_WEEKEND)): str,
+            vol.Optional(CONF_SCHEDULE_HOLIDAY, default=_default(CONF_SCHEDULE_HOLIDAY)): str,
+        }
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_SCHEDULE_WORKDAY,
-                        default=options.get(
-                            CONF_SCHEDULE_WORKDAY,
-                            data.get(CONF_SCHEDULE_WORKDAY, ""),
-                        ),
-                    ): str,
-                    vol.Required(
-                        CONF_SCHEDULE_WEEKEND,
-                        default=options.get(
-                            CONF_SCHEDULE_WEEKEND,
-                            data.get(CONF_SCHEDULE_WEEKEND, ""),
-                        ),
-                    ): str,
-                    vol.Required(
-                        CONF_SCHEDULE_HOLIDAY,
-                        default=options.get(
-                            CONF_SCHEDULE_HOLIDAY,
-                            data.get(CONF_SCHEDULE_HOLIDAY, ""),
-                        ),
-                    ): str,
-                }
-            ),
+            errors=errors,
+            data_schema=vol.Schema(schema),
         )

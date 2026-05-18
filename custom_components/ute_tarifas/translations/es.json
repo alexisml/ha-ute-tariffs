@@ -1,0 +1,90 @@
+{
+  "title": "UTE Tarifas",
+  "config": {
+    "step": {
+      "user": {
+        "title": "UTE Tarifas",
+        "description": "Configurá el seguimiento de tarifas residenciales de UTE. Los precios y horarios se mantienen actualizados dentro de la integración — dejá los campos de horario en blanco para usar los valores por defecto de UTE.",
+        "data": {
+          "contract_type": "Tipo de contrato residencial",
+          "schedule_workday": "Horario personalizado días hábiles",
+          "schedule_weekend": "Horario personalizado fin de semana",
+          "schedule_holiday": "Horario personalizado feriados",
+          "country": "Código de país para feriados",
+          "use_national_holidays": "Aplicar feriados nacionales"
+        },
+        "data_description": {
+          "contract_type": "El plan residencial de UTE al que estás suscripto (Simple, Doble o Triple).",
+          "schedule_workday": "Dejá en blanco para usar el horario estándar de UTE en días hábiles. Formato personalizado: HH:MM-HH:MM:período,… (períodos: valle, llano, punta, simple).",
+          "schedule_weekend": "Dejá en blanco para usar el horario estándar de UTE los fines de semana (todo valle).",
+          "schedule_holiday": "Dejá en blanco para usar el horario estándar de UTE en feriados (todo valle).",
+          "country": "Código de país ISO 3166-1 alfa-2 para detectar feriados nacionales. Por defecto: UY.",
+          "use_national_holidays": "Cuando está activado, los feriados nacionales usan el horario de feriados en lugar del horario de días hábiles."
+        }
+      }
+    },
+    "error": {
+      "invalid_schedule": "Formato de horario inválido. Se esperaba HH:MM-HH:MM:período,… — por ejemplo: 00:00-07:00:valle,07:00-17:00:punta,17:00-00:00:valle"
+    },
+    "abort": {
+      "already_configured": "UTE Tarifas ya está configurado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Actualizar horarios personalizados",
+        "description": "Borrar un campo revierte al horario estándar de UTE para ese tipo de día.",
+        "data": {
+          "schedule_workday": "Horario personalizado días hábiles",
+          "schedule_weekend": "Horario personalizado fin de semana",
+          "schedule_holiday": "Horario personalizado feriados"
+        },
+        "data_description": {
+          "schedule_workday": "Dejá en blanco para usar el horario estándar de UTE en días hábiles.",
+          "schedule_weekend": "Dejá en blanco para usar el horario estándar de UTE los fines de semana (todo valle).",
+          "schedule_holiday": "Dejá en blanco para usar el horario estándar de UTE en feriados (todo valle)."
+        }
+      }
+    },
+    "error": {
+      "invalid_schedule": "Formato de horario inválido. Se esperaba HH:MM-HH:MM:período,… — por ejemplo: 00:00-07:00:valle,07:00-17:00:punta,17:00-00:00:valle"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_cost": {
+        "name": "Costo actual"
+      },
+      "current_period": {
+        "name": "Período actual",
+        "state": {
+          "simple": "Simple",
+          "valle": "Valle",
+          "llano": "Llano",
+          "punta": "Punta"
+        }
+      },
+      "next_change": {
+        "name": "Próximo cambio de tarifa"
+      },
+      "next_period": {
+        "name": "Próximo período",
+        "state": {
+          "simple": "Simple",
+          "valle": "Valle",
+          "llano": "Llano",
+          "punta": "Punta"
+        }
+      },
+      "contract_type": {
+        "name": "Tipo de contrato",
+        "state": {
+          "simple": "Simple",
+          "double": "Doble",
+          "triple": "Triple"
+        }
+      }
+    }
+  }
+}

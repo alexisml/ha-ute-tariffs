@@ -3,14 +3,21 @@ name: HA holidays compatibility check
 # Runs on every push and PR so that a version drift between our dev dep and the
 # version bundled with the latest Home Assistant release is caught early.
 #
-# Why: we removed 'holidays' from manifest.json so that HA provides it at
-# runtime (avoiding version conflicts with the core workday/holiday components).
-# Our pyproject.toml dev dep must stay in sync with what HA ships, otherwise
-# local tests run against a different version than production.
+# Design:
+#   - We do NOT declare 'holidays' in manifest.json.  HA already ships it for
+#     its built-in workday/holiday components, so our integration inherits it
+#     at runtime without risk of a version conflict.
+#   - pyproject.toml dev dep pins the *exact* version HA ships with so local
+#     tests run against the same package as production.
+#   - This workflow fetches the holidays version from HA's workday manifest
+#     and warns when our dev dep diverges, prompting a manual test run.
 #
-# Result: warns (does not fail) when our pin drifts from HA's pin, because
-# different version does not automatically mean the integration is broken —
-# it means a developer should install the new pin, run tests, and confirm.
+# Action when the workflow warns:
+#   1. In pyproject.toml change  "holidays==<OLD>"  →  "holidays==<HA_VER>"
+#   2. Update the comment above that line with the HA release that ships it.
+#   3. Run: pip install -e ".[dev]" && pytest
+#   4. If tests pass, commit.  If they fail, investigate the breaking change
+#      (especially relevant for the upcoming v1.0 SemVer migration).
 
 on:
   push:
@@ -43,8 +50,7 @@ jobs:
           echo "Latest stable HA release: $TAG"
 
       # -----------------------------------------------------------------------
-      # 2. Read the holidays pin from HA's workday manifest at that tag.
-      #    The workday component always carries an exact holidays== requirement.
+      # 2. Read the exact holidays pin from HA's workday manifest at that tag.
       # -----------------------------------------------------------------------
       - name: Read holidays version from HA workday manifest
         id: ha_holidays
@@ -69,7 +75,10 @@ jobs:
           echo "HA $TAG pins holidays==$HA_VERSION"
 
       # -----------------------------------------------------------------------
-      # 3. Read our own dev-dep pin from pyproject.toml
+      # 3. Read our dev-dep pin from pyproject.toml.
+      #    Warns (does not fail) if the pin is missing or uses a range, because
+      #    that still means the integration works — it just means tests may run
+      #    against a different version than production.
       # -----------------------------------------------------------------------
       - name: Read our pinned holidays version
         id: our_holidays
@@ -85,14 +94,18 @@ jobs:
           EOF
           )
           if [ -z "$OUR_VERSION" ]; then
-            echo "::error::Could not find a holidays== pin in pyproject.toml [project.optional-dependencies] dev section"
-            exit 1
+            echo "::warning file=pyproject.toml::No exact holidays== pin found in pyproject.toml dev dependencies. For reproducible test results, pin to the same version HA ships (see next step for the HA version)."
+            echo "version=unknown" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=$OUR_VERSION" >> "$GITHUB_OUTPUT"
+            echo "Our pyproject.toml pins holidays==$OUR_VERSION"
           fi
-          echo "version=$OUR_VERSION" >> "$GITHUB_OUTPUT"
-          echo "Our pyproject.toml pins holidays==$OUR_VERSION"
 
       # -----------------------------------------------------------------------
-      # 4. Compare — warn (do not fail) if they diverge
+      # 4. Compare — warn (do not fail) if they diverge.
+      #    A version difference does not automatically break the integration,
+      #    but it means tests are not running against the same package as
+      #    production, so a manual verification is needed.
       # -----------------------------------------------------------------------
       - name: Compare versions
         env:
@@ -100,19 +113,40 @@ jobs:
           HA_VER: ${{ steps.ha_holidays.outputs.version }}
           OUR_VER: ${{ steps.our_holidays.outputs.version }}
         run: |
-          echo "──────────────────────────────────────────"
+          echo "──────────────────────────────────────────────────────────"
           echo "  Latest HA ($HA_TAG)  →  holidays==$HA_VER"
           echo "  Our dev dep          →  holidays==$OUR_VER"
-          echo "──────────────────────────────────────────"
+          echo "──────────────────────────────────────────────────────────"
+
+          if [ "$OUR_VER" = "unknown" ]; then
+            echo "⚠️  Could not determine our dev dep version (see warning above)."
+            exit 0
+          fi
 
           if [ "$HA_VER" != "$OUR_VER" ]; then
-            echo "::warning file=pyproject.toml::holidays version mismatch: HA $HA_TAG ships holidays==$HA_VER but our dev dep pins holidays==$OUR_VER. Update the pin in pyproject.toml, run the test suite against the new version, then update the comment above the pin."
+            # Check whether this is a major-version bump (potential breaking change)
+            HA_MAJOR=$(echo "$HA_VER" | cut -d. -f1)
+            OUR_MAJOR=$(echo "$OUR_VER" | cut -d. -f1)
+            NOTE=""
+            if [ "$HA_MAJOR" != "$OUR_MAJOR" ]; then
+              NOTE=" ⚠️  MAJOR version change — review the holidays changelog for breaking API changes before updating."
+            fi
+
+            echo "::warning file=pyproject.toml::holidays version mismatch: HA $HA_TAG ships holidays==$HA_VER but our dev dep pins holidays==$OUR_VER.$NOTE"
             echo ""
             echo "⚠️  Action required:"
             echo "   1. In pyproject.toml, change  \"holidays==$OUR_VER\"  →  \"holidays==$HA_VER\""
-            echo "   2. Run: pip install -e .[dev] && pytest"
-            echo "   3. If all tests pass, commit the update."
-            echo "   4. If tests fail, investigate the breaking change in holidays $HA_VER."
+            echo "   2. Update the comment above that line: '# Pin to match HA $HA_TAG'"
+            echo "   3. Run: pip install -e '.[dev]' && pytest"
+            echo "   4. If all tests pass, commit the update."
+            echo "   5. If tests fail, investigate the breaking change in holidays $HA_VER."
+            if [ "$HA_MAJOR" != "$OUR_MAJOR" ]; then
+              echo ""
+              echo "   ⚠️  Major version bump detected. Review:"
+              echo "      https://github.com/vacanza/holidays/blob/main/CHANGES.md"
+              echo "      Pay special attention to changes to country_holidays() API."
+            fi
           else
             echo "✅  holidays==$OUR_VER matches HA $HA_TAG — no action needed."
           fi
+
