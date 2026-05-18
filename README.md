@@ -97,26 +97,9 @@ Restart Home Assistant and add the integration from the UI.
 | Field | Default | Description |
 |-------|---------|-------------|
 | **Contract type** | `simple` | `simple`, `double`, or `triple` |
-| **Workday schedule override** | *(built-in)* | Leave blank to use the default workday schedule for your contract type |
-| **Weekend schedule override** | *(built-in)* | Leave blank to use the default (all-llano for Double, all-valle for Triple) |
-| **Holiday schedule override** | *(built-in)* | Leave blank to use the default (all-llano for Double, all-valle for Triple) |
+| **Punta (peak) window** | `18-22` | 4-hour peak window for Double/Triple contracts: `17-21`, `18-22`, or `19-23`. Ignored for Simple. |
 | **Monthly consumption entity** | *(none)* | Optional entity ID reporting monthly kWh (e.g. a utility meter); used to select the Simple tier. If left blank or unavailable, the cheapest tier (0–100 kWh/month) is used. |
-| **Holiday country code** | `UY` | ISO 3166-1 alpha-2 (e.g. `UY`, `AR`) |
 | **Apply national holidays** | `true` | Toggle holiday detection on/off |
-
-### Custom schedule format
-
-```
-HH:MM-HH:MM:period,HH:MM-HH:MM:period,...
-```
-
-Valid periods: `valle`, `llano`, `punta`, `simple`.
-Use `00:00` as end time to mean "until midnight".
-
-**Double workday example** (00:00–18:00 llano, 18:00–22:00 punta, 22:00–00:00 llano):
-```
-00:00-18:00:llano,18:00-22:00:punta,22:00-00:00:llano
-```
 
 ---
 

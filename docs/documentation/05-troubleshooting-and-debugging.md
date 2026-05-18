@@ -24,7 +24,6 @@ Common causes:
 |---------------|-----|
 | `No active price range for YYYY-MM-DD` | Add a `PriceRange` covering today in `prices.py`. |
 | `No active schedule range for YYYY-MM-DD` | Add a `ScheduleRange` covering today in `prices.py`. |
-| `Invalid time format` | A custom schedule override stored in config is malformed — go to **Configure** and fix or clear it. |
 | `ModuleNotFoundError: holidays` | HACS did not install requirements. Restart HA; if it persists, reinstall the integration. |
 
 ---
@@ -36,8 +35,9 @@ Common causes:
 2. Check that your HA server clock is correct — the integration converts to
    `America/Montevideo` internally, but relies on `dt_util.now()` which uses
    the system clock.
-3. If you have set a **custom schedule override**, verify its format.  Clear it
-   in **Configure** to revert to the default UTE schedule.
+3. If you have set a **custom punta window** (e.g. `17-21` instead of the
+   default `18-22`), confirm it matches your UTE plan.  You can reset it to
+   the default in **Configure**.
 
 ---
 
@@ -56,8 +56,7 @@ Common causes:
    print(d in holidays.country_holidays("UY", years=d.year))  # True
    ```
 4. If the package does not list the date, it may not be a *national* holiday in
-   the `holidays` database.  You can work around this by using a custom
-   schedule override that covers the date manually, or by disabling holiday
+   the `holidays` database.  You can work around this by disabling holiday
    detection and treating the day as a weekday.
 
 ---
@@ -71,14 +70,6 @@ pricing/schedule update.
 
 If the value looks wrong, enable debug logging and look for
 `"next_tariff_data_change"` in the logs.
-
----
-
-## Schedule override is ignored
-
-After saving a custom schedule in the options flow, the coordinator is **not**
-automatically restarted.  Reload the integration:
-**Settings › Devices & Services › UTE Tarifas › ⋮ › Reload**.
 
 ---
 

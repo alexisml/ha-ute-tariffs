@@ -112,7 +112,7 @@ TimeBlock(time(22, 0), time(0, 0), TariffPeriod.LLANO)
 The all-day sentinel `time(0, 0) – time(0, 0)` is used for SIMPLE contracts
 and all-day weekend/holiday blocks — it always matches any time.
 
-### Default workday blocks (built-in)
+### Default workday blocks (built-in, punta window `18-22`)
 
 **Double contract (Doble Horario):**
 
@@ -135,6 +135,12 @@ Weekends and holidays are **all-llano** for Double.
 
 Weekends and holidays are **all-valle** for Triple.
 
+The punta window can be shifted via the **Punta (peak) window** option in the
+integration settings.  Available options are `17-21`, `18-22` (default), and
+`19-23`.  Selecting a non-default window rebuilds the workday blocks
+accordingly (e.g. choosing `19-23` shifts the punta block one hour later and
+adjusts the surrounding llano blocks).
+
 ---
 
 ## Holiday detection
@@ -153,8 +159,8 @@ warns when the pins diverge, so the dev environment always matches the runtime
 package that HA provides — eliminating version-conflict risk.
 
 Holiday detection can be disabled per-entry with the **Apply national holidays**
-toggle.  The country code defaults to `UY` but can be changed to any ISO
-3166-1 alpha-2 code (e.g. `AR` for Argentina).
+toggle.  The country is fixed to `UY` (Uruguay); only Uruguayan national
+holidays are recognised.
 
 ---
 
