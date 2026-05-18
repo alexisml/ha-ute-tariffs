@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/alexisml/ha-ev-charger-balancer/security/advisories/new
+    url: https://github.com/alexisml/UTE-Tarifas/security/advisories/new
     about: Report a security vulnerability privately using GitHub's vulnerability reporting.
   - name: Documentation
-    url: https://github.com/alexisml/ha-ev-charger-balancer/blob/main/docs/documentation/troubleshooting-and-debugging.md
-    about: Check the Troubleshooting & Debugging guide before opening an issue.
+    url: https://github.com/alexisml/UTE-Tarifas/blob/main/README.md
+    about: Check the integration README before opening an issue.

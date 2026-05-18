@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a problem with the EV Charger Load Balancing integration
+description: Report a problem with the UTE Tarifas integration
 labels: ["bug"]
 body:
   - type: markdown
@@ -23,7 +23,7 @@ body:
     id: integration_version
     attributes:
       label: Integration version
-      description: Found in Settings → Devices & Services → EV Charger Load Balancing → ⋮ → Integration details.
+      description: Found in Settings → Devices & Services → UTE Tarifas → ⋮ → Integration details.
       placeholder: e.g. 1.2.0
     validations:
       required: true
@@ -87,4 +87,4 @@ body:
     id: additional
     attributes:
       label: Additional context
-      description: Any other information that may be relevant (charger model, action scripts used, etc.).
+      description: Any other information that may be relevant (contract type, schedule configuration, etc.).

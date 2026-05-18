@@ -11,7 +11,7 @@ updates:
           - "version-update:semver-patch"
 
   - package-ecosystem: "pip"
-    directory: "/tests"
+    directory: "/"
     schedule:
       interval: "weekly"
     ignore:
