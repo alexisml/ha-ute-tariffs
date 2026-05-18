@@ -2,6 +2,11 @@ name: Pre-release
 
 on:
   workflow_dispatch:
+    inputs:
+      rc_number:
+        description: "Release candidate number (e.g. 1 for rc.1)"
+        required: false
+        default: "1"
 
 permissions:
   contents: write
@@ -20,16 +25,19 @@ jobs:
         id: version
         run: |
           VERSION=$(python3 -c "import json; print(json.load(open('custom_components/ute_tarifas/manifest.json'))['version'])")
+          RC="${{ github.event.inputs.rc_number }}"
+          TAG="v${VERSION}-rc.${RC}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Pre-release version: $VERSION"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Pre-release tag: $TAG"
 
       - name: Check if tag already exists
         id: tag_check
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          if git tag -l "v$VERSION" | grep -q .; then
+          TAG="${{ steps.version.outputs.tag }}"
+          if git tag -l "$TAG" | grep -q .; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "::warning::Tag v$VERSION already exists — skipping pre-release."
+            echo "::warning::Tag $TAG already exists — skipping pre-release."
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
@@ -37,11 +45,11 @@ jobs:
       - name: Create and push tag
         if: steps.tag_check.outputs.exists == 'false'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "v$VERSION"
-          git push origin "v$VERSION"
+          git tag "$TAG"
+          git push origin "$TAG"
 
       - name: Create release zip
         if: steps.tag_check.outputs.exists == 'false'
@@ -53,7 +61,7 @@ jobs:
         if: steps.tag_check.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v${{ steps.version.outputs.version }}"
+          tag_name: "${{ steps.version.outputs.tag }}"
           prerelease: true
           generate_release_notes: true
           files: ute_tarifas.zip
