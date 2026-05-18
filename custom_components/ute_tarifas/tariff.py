@@ -163,32 +163,38 @@ def parse_blocks(raw: str, *, default_period: TariffPeriod) -> list[TimeBlock]:
 
 def _validate_full_day_coverage(blocks: list[TimeBlock]) -> None:
     """Ensure parsed blocks cover the full day exactly once."""
-    intervals: list[tuple[int, int]] = []
+    minute_intervals: list[tuple[int, int]] = []
     for block in blocks:
         start = block.start.hour * 60 + block.start.minute
         end = block.end.hour * 60 + block.end.minute
 
         if start == end:
-            intervals.append((0, 24 * 60))
+            if start != 0:
+                raise ValueError(
+                    "Equal start/end times only valid for 00:00-00:00 (full-day blocks)"
+                )
+            # 00:00-00:00 is the all-day sentinel used by default weekend/holiday schedules.
+            minute_intervals.append((0, 24 * 60))
             continue
         if end == 0:
+            # "until midnight" sentinel in schedule strings.
             end = 24 * 60
 
         if start < end:
-            intervals.append((start, end))
+            minute_intervals.append((start, end))
         else:
-            intervals.append((start, 24 * 60))
-            intervals.append((0, end))
+            minute_intervals.append((start, 24 * 60))
+            minute_intervals.append((0, end))
 
-    cursor = 0
-    for start, end in sorted(intervals):
-        if start > cursor:
+    expected_start = 0
+    for start, end in sorted(minute_intervals):
+        if start > expected_start:
             raise ValueError("Schedule must cover the full day without gaps")
-        if start < cursor:
+        if start < expected_start:
             raise ValueError("Schedule blocks must not overlap")
-        cursor = end
+        expected_start = end
 
-    if cursor != 24 * 60:
+    if expected_start != 24 * 60:
         raise ValueError("Schedule must cover the full day without gaps")
 
 

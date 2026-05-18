@@ -149,6 +149,11 @@ def test_parse_blocks_rejects_overlaps() -> None:
         )
 
 
+def test_parse_blocks_rejects_equal_boundaries_except_midnight() -> None:
+    with pytest.raises(ValueError, match="only valid for 00:00-00:00"):
+        parse_blocks("12:00-12:00:llano", default_period=TariffPeriod.LLANO)
+
+
 # ---------------------------------------------------------------------------
 # _contains
 # ---------------------------------------------------------------------------
@@ -424,8 +429,8 @@ def test_next_change_prefers_price_range_start_if_sooner() -> None:
         contract_type=ContractType.TRIPLE,
         price_ranges=_price_ranges(),
         schedule_ranges=_make_schedule(
-            "00:00-02:00:llano,02:00-00:00:llano",
-            weekend_raw="00:00-02:00:llano,02:00-00:00:llano",
+            "00:00-00:00:llano",
+            weekend_raw="00:00-00:00:llano",
             dp=TariffPeriod.LLANO,
         ),
     )
