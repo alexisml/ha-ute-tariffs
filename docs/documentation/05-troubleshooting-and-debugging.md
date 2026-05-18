@@ -37,7 +37,7 @@ Common causes:
    `America/Montevideo` internally, but relies on `dt_util.now()` which uses
    the system clock.
 3. If you have set a **custom schedule override**, verify its format.  Clear it
-   in **Configure** to revert to the canonical UTE schedule.
+   in **Configure** to revert to the default UTE schedule.
 
 ---
 

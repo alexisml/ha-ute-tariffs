@@ -40,7 +40,7 @@
 | Field | Required | Default | Description |
 |-------|----------|---------|-------------|
 | **Residential contract type** | Yes | `simple` | Your UTE plan: `simple`, `double`, or `triple`. |
-| **Workday schedule override** | No | *(built-in)* | Custom time-of-use blocks for weekdays. Leave blank to use the canonical UTE schedule (punta 18:00–22:00). |
+| **Workday schedule override** | No | *(built-in)* | Custom time-of-use blocks for weekdays. Leave blank to use the default UTE schedule (punta 18:00–22:00). |
 | **Weekend schedule override** | No | *(all-llano / all-valle)* | Custom blocks for Saturdays and Sundays. |
 | **Holiday schedule override** | No | *(all-llano / all-valle)* | Custom blocks for national holidays. |
 | **Holiday country code** | No | `UY` | ISO 3166-1 alpha-2 code used to identify national holidays (e.g. `UY`, `AR`). |
@@ -70,7 +70,7 @@ around to the next calendar day).
 00:00-07:00:valle,07:00-18:00:llano,18:00-22:00:punta,22:00-00:00:llano
 ```
 
-Leaving a schedule field blank falls back to the built-in canonical schedule
+Leaving a schedule field blank falls back to the built-in default schedule
 defined in `prices.py`, which updates automatically when the repository is
 updated.
 
@@ -79,8 +79,8 @@ updated.
 ## Updating schedule overrides later
 
 Go to **Settings › Devices & Services › UTE Tarifas › Configure** to open the
-options flow.  Clearing a field reverts that day type to the canonical UTE
-default.
+options flow.  Clearing a field reverts that day type to the default UTE
+schedule.
 
 ---
 
