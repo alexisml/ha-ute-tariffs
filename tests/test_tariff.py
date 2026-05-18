@@ -429,15 +429,15 @@ def test_next_change_prefers_price_range_start_if_sooner() -> None:
         contract_type=ContractType.TRIPLE,
         price_ranges=_price_ranges(),
         schedule_ranges=_make_schedule(
-            "00:00-00:00:llano",
-            weekend_raw="00:00-00:00:llano",
-            dp=TariffPeriod.LLANO,
+            "00:00-00:00:valle",
+            weekend_raw="00:00-00:00:valle",
+            dp=TariffPeriod.VALLE,
         ),
     )
     snap = calc.snapshot(datetime(2026, 5, 31, 23, 50, tzinfo=_UY))
 
     assert snap.next_change_at == datetime(2026, 6, 1, 0, 0, tzinfo=_UY)
-    assert snap.next_period == TariffPeriod.LLANO
+    assert snap.next_period == TariffPeriod.VALLE
 
 
 def test_next_tariff_data_change_returns_none_when_no_future_ranges() -> None:

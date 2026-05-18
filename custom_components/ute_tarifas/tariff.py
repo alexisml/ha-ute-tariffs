@@ -171,7 +171,7 @@ def _validate_full_day_coverage(blocks: list[TimeBlock]) -> None:
         if start == end:
             if start != 0:
                 raise ValueError(
-                    "Equal start/end times only valid for 00:00-00:00 (full-day blocks)"
+                    "Equal start/end times only valid for 00:00-00:00 (full-day block)"
                 )
             # 00:00-00:00 is the all-day sentinel used by default weekend/holiday schedules.
             minute_intervals.append((0, 24 * 60))
