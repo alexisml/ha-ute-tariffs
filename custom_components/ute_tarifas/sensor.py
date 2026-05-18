@@ -82,7 +82,7 @@ class UteTarifasSensor(CoordinatorEntity[UteTarifasCoordinator], SensorEntity):
         self._attr_unique_id = f"{entry.entry_id}_{description.key}"
 
     @property
-    def native_value(self):
+    def native_value(self) -> object:
         """Return current state."""
         payload: CoordinatorPayload = self.coordinator.data
         return self.entity_description.value_fn(payload)

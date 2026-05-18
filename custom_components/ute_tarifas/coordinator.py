@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import date, timedelta
 
@@ -11,6 +12,8 @@ from homeassistant.util import dt as dt_util
 
 from .const import ContractType, TariffPeriod
 from .tariff import PriceRange, TariffCalculator, TariffSnapshot, parse_blocks
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -64,7 +67,7 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
 
         super().__init__(
             hass,
-            logger=None,
+            _LOGGER,
             name="UTE Tarifas",
             update_interval=timedelta(minutes=1),
         )

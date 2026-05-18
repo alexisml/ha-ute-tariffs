@@ -27,3 +27,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.codespell]
+skip = ".git,.venv,*.egg-info"
+ignore-words-list = "valle,punta,llano,UYU,tarifas"

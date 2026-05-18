@@ -78,7 +78,7 @@ jobs:
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: ${{ vars.BADGE_GIST_ID }}
-          filename: ev_lb_test_count.json
+          filename: ute_tarifas_test_count.json
           label: Tests
           message: ${{ env.TEST_COUNT }} passed
           color: brightgreen
@@ -90,7 +90,7 @@ jobs:
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: ${{ vars.BADGE_GIST_ID }}
-          filename: ev_lb_loc.json
+          filename: ute_tarifas_loc.json
           label: Lines of code
           message: ${{ env.LOC }}
           color: blue

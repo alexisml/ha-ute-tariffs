@@ -46,14 +46,16 @@ class TariffSnapshot:
 DEFAULT_DOUBLE_BLOCKS = [
     TimeBlock(time(0, 0), time(7, 0), TariffPeriod.VALLE),
     TimeBlock(time(7, 0), time(17, 0), TariffPeriod.PUNTA),
-    TimeBlock(time(17, 0), time(23, 59, 59), TariffPeriod.VALLE),
+    # end=time(0,0) represents midnight (start of the next day) via _contains wrap-around logic
+    TimeBlock(time(17, 0), time(0, 0), TariffPeriod.VALLE),
 ]
 
 DEFAULT_TRIPLE_BLOCKS = [
     TimeBlock(time(0, 0), time(7, 0), TariffPeriod.VALLE),
     TimeBlock(time(7, 0), time(17, 0), TariffPeriod.LLANO),
     TimeBlock(time(17, 0), time(21, 0), TariffPeriod.PUNTA),
-    TimeBlock(time(21, 0), time(23, 59, 59), TariffPeriod.LLANO),
+    # end=time(0,0) represents midnight (start of the next day) via _contains wrap-around logic
+    TimeBlock(time(21, 0), time(0, 0), TariffPeriod.LLANO),
 ]
 
 
