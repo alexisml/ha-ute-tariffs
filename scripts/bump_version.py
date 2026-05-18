@@ -30,7 +30,7 @@ import json
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 MANIFEST_PATH = (
@@ -57,7 +57,7 @@ def get_existing_tags() -> list[str]:
 
 def next_version() -> str:
     """Compute the next calendar version based on existing tags and the current UTC date."""
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=datetime.UTC)
     year, month = now.year, now.month
 
     max_release = -1
@@ -120,7 +120,7 @@ def prerelease_version(branch: str) -> str:
         prerelease_version("feature/my-work")  -> "2026.2.feature-my-work"
         prerelease_version("main")             -> "2026.2.main"
     """
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=datetime.UTC)
     year, month = now.year, now.month
     slug = branch_slug(branch)
     base_tag = f"v{year}.{month}.{slug}"
