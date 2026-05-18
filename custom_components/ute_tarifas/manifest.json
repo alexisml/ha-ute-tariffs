@@ -8,9 +8,7 @@
   "codeowners": [
     "@alexisml"
   ],
-  "requirements": [
-    "holidays==0.74"
-  ],
+  "requirements": [],
   "iot_class": "calculated",
   "integration_type": "service"
 }

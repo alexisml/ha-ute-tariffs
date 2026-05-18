@@ -4,12 +4,14 @@ version = "0.1.0"
 description = "Home Assistant custom integration for UTE residential tariffs"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-  "holidays==0.74",
-]
+dependencies = []
 
 [project.optional-dependencies]
 dev = [
+  # Pin to match HA 2025.5.0 — update this when HA bumps the holidays pin.
+  # Do NOT declare holidays in manifest.json: HA always ships it (used by core
+  # workday + holiday integrations), so we rely on HA's version to avoid conflicts.
+  "holidays==0.70",
   "pytest==8.3.5",
   "pytest-cov==6.1.1",
   "pyright==1.1.408",
