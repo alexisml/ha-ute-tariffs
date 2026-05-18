@@ -1,4 +1,4 @@
-# UTE Tarifas
+# HACS - UTE Tarifas Residenciales
 
 ![UTE logo](https://brands.home-assistant.io/_/ute/icon.png)
 
