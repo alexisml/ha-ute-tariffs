@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
@@ -9,6 +10,8 @@ from zoneinfo import ZoneInfo
 import holidays
 
 from .const import ContractType, TariffPeriod
+
+_LOGGER = logging.getLogger(__name__)
 
 # All schedule and holiday comparisons are performed in UY local time.
 # UTE tariff periods are defined by wall-clock hours in Uruguay, so any
