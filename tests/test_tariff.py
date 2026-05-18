@@ -228,7 +228,7 @@ def test_simple_contract_returns_simple_period_and_cost() -> None:
         contract_type=ContractType.SIMPLE,
         price_ranges=_price_ranges(),
         schedule_ranges=_all_day_schedule(TariffPeriod.SIMPLE),
-        monthly_kwh=350,  # mid tier
+        monthly_kwh=350,  # mid tier (101–600 kWh/month)
     )
     snap = calc.snapshot(datetime(2026, 4, 10, 18, 30, tzinfo=_UY))
 

@@ -21,7 +21,7 @@
           "schedule_holiday": "Leave blank to use the built-in UTE holiday schedule (all-llano for Double; all-valle for Triple).",
           "country": "ISO 3166-1 alpha-2 country code for national holiday detection. Default: UY.",
           "use_national_holidays": "When enabled, national holidays follow the holiday schedule instead of the weekday schedule.",
-          "monthly_kwh_entity": "Entity ID of a sensor that reports monthly kWh consumption (e.g. a utility meter). Used only for the Simple contract to select the consumption tier. If left blank or unavailable, the cheapest tier (0–100 kWh) is used."
+          "monthly_kwh_entity": "Entity ID of a sensor that reports monthly kWh consumption (e.g. a utility meter). Used only for the Simple contract to select the consumption tier. If left blank or unavailable, the low tier (0–100 kWh/month) is used."
         }
       }
     },

@@ -45,7 +45,7 @@
 | **Holiday schedule override** | No | *(all-llano / all-valle)* | Custom blocks for national holidays. |
 | **Holiday country code** | No | `UY` | ISO 3166-1 alpha-2 code used to identify national holidays (e.g. `UY`, `AR`). |
 | **Apply national holidays** | No | `true` | When enabled, holidays use the holiday schedule instead of the weekday schedule. |
-| **Monthly consumption entity** | No | *(cheapest Simple tier)* | Entity ID of a sensor that reports your monthly kWh consumption (e.g. a utility meter). Used only for the Simple contract to select the consumption tier (0–100, 101–600, or 601+ kWh/month). If left blank or the entity is unavailable, the cheapest tier is used. |
+| **Monthly consumption entity** | No | *(low tier)* | Entity ID of a sensor that reports your monthly kWh consumption (e.g. a utility meter). Used only for the Simple contract to select the consumption tier (0–100, 101–600, or 601+ kWh/month). If left blank or the entity is unavailable, the low tier (0–100 kWh/month) is used. |
 
 ### Schedule string format
 

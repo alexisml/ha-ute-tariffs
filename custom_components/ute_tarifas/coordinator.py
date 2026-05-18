@@ -153,7 +153,8 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
                 except (ValueError, TypeError):
                     _LOGGER.warning(
                         "Could not parse monthly consumption from entity %s (state=%r); "
-                        "falling back to cheapest Simple tier",
+                        "falling back to cheapest Simple tier (Simple contract only — "
+                        "ignored for Double/Triple)",
                         self._monthly_kwh_entity,
                         state.state,
                     )
