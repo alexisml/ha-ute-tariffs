@@ -1,7 +1,7 @@
 {
   "domain": "ute_tarifas",
   "name": "UTE Tarifas",
-  "version": "2026.5.0",
+  "version": "2026.5.1",
   "documentation": "https://github.com/alexisml/ha-ute-tariffs",
   "issue_tracker": "https://github.com/alexisml/ha-ute-tariffs/issues",
   "config_flow": true,
