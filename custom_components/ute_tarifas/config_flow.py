@@ -95,9 +95,9 @@ class UteTarifasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     title="UTE Tarifas",
                     data={
                         CONF_CONTRACT_TYPE: user_input[CONF_CONTRACT_TYPE],
-                        CONF_SCHEDULE_WORKDAY: user_input.get(CONF_SCHEDULE_WORKDAY, ""),
-                        CONF_SCHEDULE_WEEKEND: user_input.get(CONF_SCHEDULE_WEEKEND, ""),
-                        CONF_SCHEDULE_HOLIDAY: user_input.get(CONF_SCHEDULE_HOLIDAY, ""),
+                        CONF_SCHEDULE_WORKDAY: user_input.get(CONF_SCHEDULE_WORKDAY, "").strip(),
+                        CONF_SCHEDULE_WEEKEND: user_input.get(CONF_SCHEDULE_WEEKEND, "").strip(),
+                        CONF_SCHEDULE_HOLIDAY: user_input.get(CONF_SCHEDULE_HOLIDAY, "").strip(),
                         CONF_COUNTRY: country,
                         CONF_USE_NATIONAL_HOLIDAYS: user_input[CONF_USE_NATIONAL_HOLIDAYS],
                     },
@@ -157,7 +157,13 @@ class UteTarifasOptionsFlow(config_entries.OptionsFlow):
                     errors[field] = err
 
             if not errors:
-                return self.async_create_entry(title="", data=user_input)
+                return self.async_create_entry(
+                    title="",
+                    data={
+                        k: v.strip() if isinstance(v, str) else v
+                        for k, v in user_input.items()
+                    },
+                )
 
         def _default(key: str) -> str:
             return options.get(key, data.get(key, ""))

@@ -64,7 +64,11 @@ def _build_schedule_ranges(
     """
     canonical_ranges = UTE_SCHEDULE_RANGES[contract_type]
 
-    if not (custom_workday or custom_weekend or custom_holiday):
+    wd = custom_workday.strip()
+    we = custom_weekend.strip()
+    hd = custom_holiday.strip()
+
+    if not (wd or we or hd):
         return canonical_ranges
 
     dp = _default_period(contract_type)
@@ -74,18 +78,18 @@ def _build_schedule_ranges(
             start=canonical.start,
             end=canonical.end,
             workday_blocks=(
-                parse_blocks(custom_workday, default_period=dp)
-                if custom_workday
+                parse_blocks(wd, default_period=dp)
+                if wd
                 else canonical.workday_blocks
             ),
             weekend_blocks=(
-                parse_blocks(custom_weekend, default_period=dp)
-                if custom_weekend
+                parse_blocks(we, default_period=dp)
+                if we
                 else canonical.weekend_blocks
             ),
             holiday_blocks=(
-                parse_blocks(custom_holiday, default_period=dp)
-                if custom_holiday
+                parse_blocks(hd, default_period=dp)
+                if hd
                 else canonical.holiday_blocks
             ),
         )

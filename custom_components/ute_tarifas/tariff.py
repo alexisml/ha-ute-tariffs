@@ -207,20 +207,28 @@ class TariffCalculator:
         self._schedule_ranges = sorted(schedule_ranges, key=lambda s: s.start)
         self._country = country
         self._use_national_holidays = use_national_holidays
+        # Cache holiday sets keyed by (country, year) to avoid reconstructing
+        # the holidays object on every _is_holiday() call within a snapshot().
+        self._holiday_cache: dict[tuple[str, int], frozenset[date]] = {}
 
     def _is_holiday(self, value: date) -> bool:
         if not self._use_national_holidays:
             return False
-        try:
-            return value in holidays.country_holidays(self._country, years=value.year)
-        except (KeyError, NotImplementedError) as exc:
-            _LOGGER.warning(
-                "Holiday lookup failed for country %r on %s: %s — treating as non-holiday",
-                self._country,
-                value,
-                exc,
-            )
-            return False
+        key = (self._country, value.year)
+        if key not in self._holiday_cache:
+            try:
+                self._holiday_cache[key] = frozenset(
+                    holidays.country_holidays(self._country, years=value.year).keys()
+                )
+            except (KeyError, NotImplementedError) as exc:
+                _LOGGER.warning(
+                    "Holiday lookup failed for country %r on %s: %s — treating as non-holiday",
+                    self._country,
+                    value,
+                    exc,
+                )
+                self._holiday_cache[key] = frozenset()
+        return value in self._holiday_cache[key]
 
     def _blocks_for_day(self, value: date) -> list[TimeBlock]:
         sched = _active_schedule_range(value, self._schedule_ranges)

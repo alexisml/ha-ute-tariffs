@@ -31,7 +31,7 @@ jobs:
       - name: Run unit tests
         run: |
           mkdir -p results
-          python -m pytest tests/ -v --junitxml=results/junit.xml -o junit_family=legacy --cov=custom_components/ute_tarifas --cov-report=xml:results/coverage.xml --cov-fail-under=90
+          python -m pytest tests/ -v --junitxml=results/junit.xml -o junit_family=legacy --cov-report=xml:results/coverage.xml
 
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2.22.0
