@@ -88,9 +88,10 @@ Restart Home Assistant and add the integration from the UI.
 | Field | Default | Description |
 |-------|---------|-------------|
 | **Contract type** | `simple` | `simple`, `double`, or `triple` |
-| **Workday schedule override** | *(built-in)* | Leave blank for the canonical UTE workday schedule |
-| **Weekend schedule override** | *(all-valle)* | Leave blank; weekends are always all-valle |
-| **Holiday schedule override** | *(all-valle)* | Leave blank; holidays are always all-valle |
+| **Workday schedule override** | *(built-in)* | Leave blank to use the default workday schedule for your contract type |
+| **Weekend schedule override** | *(built-in)* | Leave blank to use the default (all-llano for Double, all-valle for Triple) |
+| **Holiday schedule override** | *(built-in)* | Leave blank to use the default (all-llano for Double, all-valle for Triple) |
+| **Monthly consumption entity** | *(none)* | Optional entity ID reporting monthly kWh (e.g. a utility meter); used to select the Simple tier. If left blank or unavailable, the cheapest tier (0–100 kWh/month) is used. |
 | **Holiday country code** | `UY` | ISO 3166-1 alpha-2 (e.g. `UY`, `AR`) |
 | **Apply national holidays** | `true` | Toggle holiday detection on/off |
 
@@ -103,9 +104,9 @@ HH:MM-HH:MM:period,HH:MM-HH:MM:period,...
 Valid periods: `valle`, `llano`, `punta`, `simple`.
 Use `00:00` as end time to mean "until midnight".
 
-**Double workday example:**
+**Double workday example** (00:00–18:00 llano, 18:00–22:00 punta, 22:00–00:00 llano):
 ```
-00:00-07:00:valle,07:00-17:00:punta,17:00-00:00:valle
+00:00-18:00:llano,18:00-22:00:punta,22:00-00:00:llano
 ```
 
 ---

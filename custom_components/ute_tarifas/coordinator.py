@@ -126,6 +126,7 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
             iva_rate=IVA_RATE,
         )
         self._contract_type = contract_type
+        self._last_bad_monthly_state: str | None = None
 
         super().__init__(
             hass,
