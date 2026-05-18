@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      new_version:
+        description: 'New version to release (e.g. 1.2.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Create Release PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Bump version in manifest.json
+        id: version
+        run: |
+          VERSION="${{ inputs.new_version }}"
+          python3 - "$VERSION" <<'EOF'
+          import json, sys
+          path = "custom_components/ute_tarifas/manifest.json"
+          with open(path) as f:
+              data = json.load(f)
+          data["version"] = sys.argv[1]
+          with open(path, "w") as f:
+              json.dump(data, f, indent=2, ensure_ascii=False)
+              f.write("\n")
+          EOF
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Bumped manifest.json to $VERSION"
+
+      - name: Create release branch and open PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          BRANCH="release/v${VERSION}"
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null 2>&1; then
+            echo "::warning::Branch $BRANCH already exists — a release PR for $VERSION is already open. No new PR was created."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add custom_components/ute_tarifas/manifest.json
+
+          if git diff --cached --quiet; then
+            echo "::error::No changes staged — manifest.json already has version $VERSION on this branch."
+            exit 1
+          fi
+
+          git commit -m "Prepare release v$VERSION"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "Bump version to $VERSION" \
+            --body "Automated version bump to \`$VERSION\` for release. Merging this PR will trigger the publish workflow to tag and create the GitHub Release." \
+            --base main \
+            --head "$BRANCH"

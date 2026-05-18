@@ -1,0 +1,127 @@
+{
+  "title": "UTE Tarifas",
+  "config": {
+    "step": {
+      "user": {
+        "title": "UTE Tarifas",
+        "description": "Configurá el seguimiento de tarifas residenciales de UTE. Los precios y horarios se mantienen actualizados dentro de la integración — dejá los campos de horario en blanco para usar los valores por defecto de UTE.",
+        "data": {
+          "contract_type": "Tipo de contrato residencial",
+          "schedule_workday": "Horario personalizado días hábiles",
+          "schedule_weekend": "Horario personalizado fin de semana",
+          "schedule_holiday": "Horario personalizado feriados",
+          "country": "Código de país para feriados",
+          "use_national_holidays": "Aplicar feriados nacionales",
+          "monthly_kwh_entity": "Entidad de consumo mensual (opcional)"
+        },
+        "data_description": {
+          "contract_type": "El plan residencial de UTE al que estás suscripto (Simple, Doble o Triple).",
+          "schedule_workday": "Dejá en blanco para usar el horario estándar de UTE en días hábiles (punta 18:00–22:00). Formato personalizado: HH:MM-HH:MM:período,… (períodos: valle, llano, punta, simple).",
+          "schedule_weekend": "Dejá en blanco para usar el horario estándar de UTE los fines de semana (todo llano para Doble; todo valle para Triple).",
+          "schedule_holiday": "Dejá en blanco para usar el horario estándar de UTE en feriados (todo llano para Doble; todo valle para Triple).",
+          "country": "Código de país ISO 3166-1 alfa-2 para detectar feriados nacionales. Por defecto: UY.",
+          "use_national_holidays": "Cuando está activado, los feriados nacionales usan el horario de feriados en lugar del horario de días hábiles.",
+          "monthly_kwh_entity": "ID de la entidad que reporta el consumo mensual en kWh (por ejemplo, un medidor de utilidad). Solo se usa para el contrato Simple para seleccionar el tramo de consumo. Si no se configura o no está disponible, se usa el tramo más económico (0–100 kWh)."
+        }
+      }
+    },
+    "error": {
+      "invalid_schedule": "Formato de horario inválido. Se esperaba HH:MM-HH:MM:período,… — por ejemplo: 00:00-18:00:llano,18:00-22:00:punta,22:00-00:00:llano",
+      "invalid_country": "Código de país no soportado. Usá un código ISO 3166-1 alfa-2 válido (p. ej. UY, AR, BR)."
+    },
+    "abort": {
+      "already_configured": "UTE Tarifas ya está configurado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Actualizar horarios personalizados",
+        "description": "Borrar un campo revierte al horario estándar de UTE para ese tipo de día.",
+        "data": {
+          "schedule_workday": "Horario personalizado días hábiles",
+          "schedule_weekend": "Horario personalizado fin de semana",
+          "schedule_holiday": "Horario personalizado feriados",
+          "monthly_kwh_entity": "Entidad de consumo mensual (opcional)",
+          "use_national_holidays": "Aplicar feriados nacionales"
+        },
+        "data_description": {
+          "schedule_workday": "Dejá en blanco para usar el horario estándar de UTE en días hábiles.",
+          "schedule_weekend": "Dejá en blanco para usar el horario estándar de UTE los fines de semana.",
+          "schedule_holiday": "Dejá en blanco para usar el horario estándar de UTE en feriados.",
+          "monthly_kwh_entity": "ID de la entidad que reporta el consumo mensual en kWh. Si no está disponible, se usa el tramo más económico del contrato Simple.",
+          "use_national_holidays": "Cuando está activado, los feriados nacionales usan el horario de feriados en lugar del horario de días hábiles."
+        }
+      }
+    },
+    "error": {
+      "invalid_schedule": "Formato de horario inválido. Se esperaba HH:MM-HH:MM:período,… — por ejemplo: 00:00-18:00:llano,18:00-22:00:punta,22:00-00:00:llano"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_cost": {
+        "name": "Costo actual (con IVA)"
+      },
+      "current_cost_excl_iva": {
+        "name": "Costo actual (sin IVA)"
+      },
+      "iva_rate": {
+        "name": "Tasa de IVA"
+      },
+      "price_simple_low": {
+        "name": "Simple — Tramo bajo (sin IVA)"
+      },
+      "price_simple_mid": {
+        "name": "Simple — Tramo medio (sin IVA)"
+      },
+      "price_simple_high": {
+        "name": "Simple — Tramo alto (sin IVA)"
+      },
+      "price_double_llano": {
+        "name": "Doble — Llano (sin IVA)"
+      },
+      "price_double_punta": {
+        "name": "Doble — Punta (sin IVA)"
+      },
+      "price_triple_valle": {
+        "name": "Triple — Valle (sin IVA)"
+      },
+      "price_triple_llano": {
+        "name": "Triple — Llano (sin IVA)"
+      },
+      "price_triple_punta": {
+        "name": "Triple — Punta (sin IVA)"
+      },
+      "current_period": {
+        "name": "Período actual",
+        "state": {
+          "simple": "Simple",
+          "valle": "Valle",
+          "llano": "Llano",
+          "punta": "Punta"
+        }
+      },
+      "next_change": {
+        "name": "Próximo cambio de tarifa"
+      },
+      "next_period": {
+        "name": "Próximo período",
+        "state": {
+          "simple": "Simple",
+          "valle": "Valle",
+          "llano": "Llano",
+          "punta": "Punta"
+        }
+      },
+      "contract_type": {
+        "name": "Tipo de contrato",
+        "state": {
+          "simple": "Simple",
+          "double": "Doble",
+          "triple": "Triple"
+        }
+      }
+    }
+  }
+}

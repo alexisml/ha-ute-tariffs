@@ -1,0 +1,14 @@
+{
+  "domain": "ute_tarifas",
+  "name": "UTE Tarifas",
+  "version": "0.1.0",
+  "documentation": "https://github.com/alexisml/UTE-Tarifas",
+  "issue_tracker": "https://github.com/alexisml/UTE-Tarifas/issues",
+  "config_flow": true,
+  "codeowners": [
+    "@alexisml"
+  ],
+  "requirements": [],
+  "iot_class": "calculated",
+  "integration_type": "service"
+}
