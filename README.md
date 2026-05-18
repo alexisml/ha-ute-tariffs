@@ -4,6 +4,8 @@
 
 **HACS custom integration — residential UTE contracts only.**
 
+> ⚠️ **Unofficial project — not affiliated with or endorsed by UTE (Administración Nacional de Usinas y Trasmisiones Eléctricas) in any way.**
+
 Exposes **15 Home Assistant sensors** — 5 main sensors (current tariff cost
 and period, next change time and period, contract type) plus 10 diagnostic
 sensors (price ex-IVA, IVA rate, and one per price tier) — that track the
@@ -29,10 +31,13 @@ bill.
 
 ---
 
-> **AI Disclaimer** — parts of this integration's scaffolding were generated
-> with the assistance of AI tools (GitHub Copilot).  All logic has been
-> reviewed, tested, and validated by a human maintainer.  Tariff data is
-> sourced from official UTE publications and updated manually.
+## 🤖 AI Disclosure
+
+A significant portion of this project — including code, documentation, and
+design — was developed with the assistance of AI tools (GitHub Copilot /
+large-language models). All AI-generated output has been reviewed, but users
+and contributors should audit the code independently before relying on it in
+production environments.
 
 ---
 
