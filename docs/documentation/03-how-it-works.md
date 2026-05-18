@@ -146,9 +146,10 @@ import holidays
 value in holidays.country_holidays("UY", years=value.year)
 ```
 
-The package is pinned to `>=0.49` to match Home Assistant 2024.6.0 (the
-minimum supported version), ensuring no version conflict with HA's own
-dependencies.
+The package is pinned to an **exact version** matching what HA 2025.5.0 ships
+(currently `holidays==0.70`).  A CI workflow (`.github/workflows/ha-holidays-check.yml`)
+warns when the pins diverge, so the dev environment always matches the runtime
+package that HA provides — eliminating version-conflict risk.
 
 Holiday detection can be disabled per-entry with the **Apply national holidays**
 toggle.  The country code defaults to `UY` but can be changed to any ISO

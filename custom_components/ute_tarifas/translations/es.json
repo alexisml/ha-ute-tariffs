@@ -24,7 +24,8 @@
       }
     },
     "error": {
-      "invalid_schedule": "Formato de horario inválido. Se esperaba HH:MM-HH:MM:período,… — por ejemplo: 00:00-07:00:valle,07:00-17:00:punta,17:00-00:00:valle"
+      "invalid_schedule": "Formato de horario inválido. Se esperaba HH:MM-HH:MM:período,… — por ejemplo: 00:00-07:00:valle,07:00-17:00:punta,17:00-00:00:valle",
+      "invalid_country": "Código de país no soportado. Usá un código ISO 3166-1 alfa-2 válido (p. ej. UY, AR, BR)."
     },
     "abort": {
       "already_configured": "UTE Tarifas ya está configurado."

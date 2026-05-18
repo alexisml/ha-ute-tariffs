@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import holidays
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
@@ -45,6 +46,21 @@ def _validate_schedule(raw: str, default_period: TariffPeriod) -> str | None:
     return None
 
 
+def _validate_country(raw: str) -> tuple[str, str | None]:
+    """Normalize and validate a country code.
+
+    Returns ``(normalized_code, error_key)`` where *error_key* is ``None`` on
+    success or ``"invalid_country"`` when the code is not supported by the
+    ``holidays`` package.
+    """
+    code = raw.strip().upper()
+    try:
+        holidays.country_holidays(code)
+    except (KeyError, NotImplementedError):
+        return code, "invalid_country"
+    return code, None
+
+
 class UteTarifasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle the initial config flow for UTE Tarifas.
 
@@ -70,6 +86,10 @@ class UteTarifasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 if err:
                     errors[field] = err
 
+            country, country_err = _validate_country(user_input.get(CONF_COUNTRY, DEFAULT_COUNTRY))
+            if country_err:
+                errors[CONF_COUNTRY] = country_err
+
             if not errors:
                 return self.async_create_entry(
                     title="UTE Tarifas",
@@ -78,7 +98,7 @@ class UteTarifasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_SCHEDULE_WORKDAY: user_input.get(CONF_SCHEDULE_WORKDAY, ""),
                         CONF_SCHEDULE_WEEKEND: user_input.get(CONF_SCHEDULE_WEEKEND, ""),
                         CONF_SCHEDULE_HOLIDAY: user_input.get(CONF_SCHEDULE_HOLIDAY, ""),
-                        CONF_COUNTRY: user_input[CONF_COUNTRY],
+                        CONF_COUNTRY: country,
                         CONF_USE_NATIONAL_HOLIDAYS: user_input[CONF_USE_NATIONAL_HOLIDAYS],
                     },
                 )

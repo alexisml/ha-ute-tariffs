@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import timedelta
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -13,11 +13,9 @@ from homeassistant.util import dt as dt_util
 from .const import ContractType, TariffPeriod
 from .prices import UTE_PRICE_RANGES, UTE_SCHEDULE_RANGES
 from .tariff import (
-    UY_TZ,
     ScheduleRange,
     TariffCalculator,
     TariffSnapshot,
-    _active_schedule_range,
     parse_blocks,
 )
 
@@ -58,24 +56,23 @@ def _build_schedule_ranges(
     date-bounded list from ``prices.py`` so that any future schedule changes
     encoded there take effect automatically without user action.
 
-    When at least one override is provided, a single eternal
-    :class:`ScheduleRange` (``date.min`` → ``date.max``) is built from the
-    user's strings, falling back to the currently-active canonical blocks for
-    any day type left blank.
+    When at least one override is provided, each canonical :class:`ScheduleRange`
+    is preserved with its original date bounds.  Only the day-types that have a
+    custom string are replaced; blank day-types keep the canonical blocks from
+    that range.  This ensures future schedule updates in ``prices.py`` continue
+    to apply even when partial overrides are active.
     """
     canonical_ranges = UTE_SCHEDULE_RANGES[contract_type]
 
     if not (custom_workday or custom_weekend or custom_holiday):
         return canonical_ranges
 
-    today = datetime.now(tz=UY_TZ).date()
-    canonical = _active_schedule_range(today, canonical_ranges)
     dp = _default_period(contract_type)
 
     return [
         ScheduleRange(
-            start=date.min,
-            end=date.max,
+            start=canonical.start,
+            end=canonical.end,
             workday_blocks=(
                 parse_blocks(custom_workday, default_period=dp)
                 if custom_workday
@@ -92,6 +89,7 @@ def _build_schedule_ranges(
                 else canonical.holiday_blocks
             ),
         )
+        for canonical in canonical_ranges
     ]
 
 

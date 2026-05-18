@@ -615,3 +615,33 @@ def test_utc_datetime_determines_holiday_in_uy_calendar() -> None:
     snap_holiday = calc.snapshot(datetime(2026, 5, 1, 3, 0, tzinfo=_UTC))
     assert snap_holiday.current_period == TariffPeriod.VALLE
 
+
+# ---------------------------------------------------------------------------
+# _is_holiday — error handling with invalid country code
+# ---------------------------------------------------------------------------
+
+
+def test_is_holiday_invalid_country_returns_false(caplog: pytest.LogCaptureFixture) -> None:
+    """An invalid country code must not raise; _is_holiday returns False and logs a warning."""
+    import logging
+
+    calc = TariffCalculator(
+        contract_type=ContractType.TRIPLE,
+        price_ranges=_price_ranges(),
+        schedule_ranges=_make_schedule(
+            "00:00-07:00:valle,07:00-17:00:llano,17:00-21:00:punta,21:00-00:00:llano",
+            holiday_raw="00:00-00:00:valle",
+            dp=TariffPeriod.LLANO,
+        ),
+        country="XX",  # not a valid holidays country code
+        use_national_holidays=True,
+    )
+
+    with caplog.at_level(logging.WARNING, logger="custom_components.ute_tarifas.tariff"):
+        # 2026-05-01 would normally be a holiday in UY; with bad country code it's treated
+        # as a non-holiday → workday blocks apply → 10:00 should be llano
+        snap = calc.snapshot(datetime(2026, 5, 1, 10, 0, tzinfo=_UY))
+
+    assert snap.current_period == TariffPeriod.LLANO
+    assert any("XX" in message for message in caplog.messages)
+

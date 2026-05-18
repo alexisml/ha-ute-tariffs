@@ -24,7 +24,8 @@
       }
     },
     "error": {
-      "invalid_schedule": "Invalid schedule format. Expected HH:MM-HH:MM:period,… — for example: 00:00-07:00:valle,07:00-17:00:punta,17:00-00:00:valle"
+      "invalid_schedule": "Invalid schedule format. Expected HH:MM-HH:MM:period,… — for example: 00:00-07:00:valle,07:00-17:00:punta,17:00-00:00:valle",
+      "invalid_country": "Unsupported country code. Use a valid ISO 3166-1 alpha-2 code (e.g. UY, AR, BR)."
     },
     "abort": {
       "already_configured": "UTE Tarifas is already configured."

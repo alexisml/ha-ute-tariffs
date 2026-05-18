@@ -24,7 +24,7 @@ jobs:
           cache: "pip"
 
       - name: Install Ruff
-        run: pip install ruff==0.7.4
+        run: pip install ruff==0.11.13
 
       - name: Run Ruff check
         run: ruff check .

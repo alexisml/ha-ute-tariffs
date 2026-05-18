@@ -16,7 +16,7 @@ body:
       options:
         - label: I have searched the existing issues and this is not a duplicate.
           required: true
-        - label: I have checked the [Troubleshooting & Debugging guide](../../blob/main/docs/documentation/troubleshooting-and-debugging.md).
+        - label: I have checked the [Troubleshooting & Debugging guide](../../blob/main/docs/documentation/05-troubleshooting-and-debugging.md).
           required: true
 
   - type: input
@@ -80,7 +80,7 @@ body:
       label: Relevant log output
       description: |
         Enable debug logging for the integration and paste relevant lines here.
-        See the [Logging Guide](../../blob/main/docs/documentation/logging-guide.md) for instructions.
+        See the [Logging Guide](../../blob/main/docs/documentation/05-troubleshooting-and-debugging.md) for instructions.
       render: text
 
   - type: textarea

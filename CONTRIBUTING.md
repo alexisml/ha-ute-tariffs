@@ -50,7 +50,7 @@ Use the **Feature Request** issue template. Describe:
 - The behavior you would like to see
 - Any alternatives you have considered
 
-Before opening a request, check the [roadmap](docs/documentation/04-development-guide.md#project-roadmap) and existing issues to avoid duplicates.
+Before opening a request, check the [development guide](docs/documentation/04-development-guide.md) and existing issues to avoid duplicates.
 
 ---
 

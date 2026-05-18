@@ -211,7 +211,16 @@ class TariffCalculator:
     def _is_holiday(self, value: date) -> bool:
         if not self._use_national_holidays:
             return False
-        return value in holidays.country_holidays(self._country, years=value.year)
+        try:
+            return value in holidays.country_holidays(self._country, years=value.year)
+        except (KeyError, NotImplementedError) as exc:
+            _LOGGER.warning(
+                "Holiday lookup failed for country %r on %s: %s — treating as non-holiday",
+                self._country,
+                value,
+                exc,
+            )
+            return False
 
     def _blocks_for_day(self, value: date) -> list[TimeBlock]:
         sched = _active_schedule_range(value, self._schedule_ranges)

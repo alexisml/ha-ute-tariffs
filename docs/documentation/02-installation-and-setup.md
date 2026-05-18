@@ -4,7 +4,7 @@
 
 | Requirement | Minimum |
 |-------------|---------|
-| Home Assistant | 2024.6.0 |
+| Home Assistant | 2025.5.0 |
 | HACS | 2.0+ (for HACS install) |
 | Internet access | Not required — all data is local |
 
