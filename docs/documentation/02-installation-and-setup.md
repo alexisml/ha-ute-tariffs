@@ -40,48 +40,17 @@
 | Field | Required | Default | Description |
 |-------|----------|---------|-------------|
 | **Residential contract type** | Yes | `simple` | Your UTE plan: `simple`, `double`, or `triple`. |
-| **Workday schedule override** | No | *(built-in)* | Custom time-of-use blocks for weekdays. Leave blank to use the default UTE schedule (punta 18:00–22:00). |
-| **Weekend schedule override** | No | *(all-llano / all-valle)* | Custom blocks for Saturdays and Sundays. |
-| **Holiday schedule override** | No | *(all-llano / all-valle)* | Custom blocks for national holidays. |
-| **Holiday country code** | No | `UY` | ISO 3166-1 alpha-2 code used to identify national holidays (e.g. `UY`, `AR`). |
-| **Apply national holidays** | No | `true` | When enabled, holidays use the holiday schedule instead of the weekday schedule. |
+| **Punta (peak) window** | No | `18-22` | 4-hour peak window for Double and Triple contracts. Choose `17-21`, `18-22`, or `19-23` to match your UTE plan. Ignored for Simple. |
+| **Apply national holidays** | No | `true` | When enabled, Uruguayan national holidays use the holiday schedule (all-llano for Double; all-valle for Triple) instead of the weekday schedule. |
 | **Monthly consumption entity** | No | *(low tier)* | Entity ID of a sensor that reports your monthly kWh consumption (e.g. a utility meter). Used only for the Simple contract to select the consumption tier (0–100, 101–600, or 601+ kWh/month). If left blank or the entity is unavailable, the low tier (0–100 kWh/month) is used. |
-
-### Schedule string format
-
-```
-HH:MM-HH:MM:period,HH:MM-HH:MM:period,...
-```
-
-Valid period names: `valle`, `llano`, `punta`, `simple`.
-
-Use `00:00` as the **end time** to mean "until midnight" (the block wraps
-around to the next calendar day).
-
-**Example — standard Double workday schedule:**
-
-```
-00:00-18:00:llano,18:00-22:00:punta,22:00-00:00:llano
-```
-
-**Example — standard Triple workday schedule:**
-
-```
-00:00-07:00:valle,07:00-18:00:llano,18:00-22:00:punta,22:00-00:00:llano
-```
-
-Leaving a schedule field blank falls back to the built-in default schedule
-defined in `prices.py`, which updates automatically when the repository is
-updated.
 
 ---
 
-## Updating schedule overrides later
+## Updating settings later
 
 Go to **Settings › Devices & Services › UTE Tarifas › Configure** to open the
-options flow.  From there you can update schedule overrides, the monthly
-consumption entity, and the **Apply national holidays** toggle.  Clearing a
-schedule field reverts that day type to the default UTE schedule.
+options flow.  From there you can update the punta window, the monthly
+consumption entity, and the **Apply national holidays** toggle.
 
 ---
 

@@ -60,8 +60,9 @@ section that fits your needs.
   **all-valle** for Triple contracts (standard UTE residential rule).
 - **IVA (22 %)** is applied automatically.  `current_cost` always shows the
   IVA-inclusive price — the figure you see on your electricity bill.
-- **Custom schedule overrides** can be set per day-type via *Settings › Devices
-  & Services › UTE Tarifas › Configure*.
+- **Punta window** can be adjusted for Double/Triple contracts via *Settings ›
+  Devices & Services › UTE Tarifas › Configure* (options: `17-21`, `18-22`,
+  `19-23`; default `18-22`).
 
 ---
 
