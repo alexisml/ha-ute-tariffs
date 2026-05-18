@@ -19,7 +19,7 @@ bill.
 
 [![HACS Validation](https://github.com/alexisml/UTE-Tarifas/actions/workflows/hacs-validate.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/hacs-validate.yml)
 [![Unit Tests](https://github.com/alexisml/UTE-Tarifas/actions/workflows/tests.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/tests.yml)
-[![Tests](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Falexisml%2F7107fdc2a20719f22bc6fe9f80eba710%2Fraw%2Fute_tarifas_test_count.json)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/tests.yml)
+[![Tests](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Falexisml%2F7de6801feff5497e0b488fa136d1035e%2Fraw%2Fute_tarifas_test_count.json)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/alexisml/UTE-Tarifas/graph/badge.svg)](https://codecov.io/gh/alexisml/UTE-Tarifas)
 [![Ruff](https://github.com/alexisml/UTE-Tarifas/actions/workflows/ruff.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/ruff.yml)
 [![Type Check](https://github.com/alexisml/UTE-Tarifas/actions/workflows/type-check.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/type-check.yml)
@@ -27,7 +27,7 @@ bill.
 [![CodeQL](https://github.com/alexisml/UTE-Tarifas/actions/workflows/codeql.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/codeql.yml)
 [![Gitleaks](https://github.com/alexisml/UTE-Tarifas/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/gitleaks.yml)
 [![Dependabot](https://img.shields.io/badge/Dependabot-enabled-brightgreen?logo=dependabot)](https://github.com/alexisml/UTE-Tarifas/blob/main/.github/dependabot.yml)
-[![Lines of Code](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Falexisml%2F7107fdc2a20719f22bc6fe9f80eba710%2Fraw%2Fute_tarifas_loc.json)](https://github.com/alexisml/UTE-Tarifas)
+[![Lines of Code](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Falexisml%2F7de6801feff5497e0b488fa136d1035e%2Fraw%2Fute_tarifas_loc.json)](https://github.com/alexisml/UTE-Tarifas)
 
 ---
 
