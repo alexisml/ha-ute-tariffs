@@ -102,7 +102,7 @@ Restart Home Assistant.  The integration will log:
 
 ## Getting help
 
-- Open an issue at <https://github.com/alexisml/UTE-Tarifas/issues>.
+- Open an issue at <https://github.com/alexisml/ha-ute-tariffs/issues>.
 - Include your HA version, the integration version (from HACS), and any
   relevant log lines.
 

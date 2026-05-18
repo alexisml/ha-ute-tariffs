@@ -2,8 +2,8 @@
   "domain": "ute_tarifas",
   "name": "UTE Tarifas",
   "version": "0.1.0",
-  "documentation": "https://github.com/alexisml/UTE-Tarifas",
-  "issue_tracker": "https://github.com/alexisml/UTE-Tarifas/issues",
+  "documentation": "https://github.com/alexisml/ha-ute-tariffs",
+  "issue_tracker": "https://github.com/alexisml/ha-ute-tariffs/issues",
   "config_flow": true,
   "codeowners": [
     "@alexisml"

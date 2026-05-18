@@ -14,7 +14,7 @@
 
 1. Open HACS in your Home Assistant sidebar.
 2. Click **Custom repositories** (top-right ⋮ menu).
-3. Add `https://github.com/alexisml/UTE-Tarifas` as an **Integration**.
+3. Add `https://github.com/alexisml/ha-ute-tariffs` as an **Integration**.
 4. Search for **UTE Tarifas** and click **Download**.
 5. Restart Home Assistant.
 

@@ -15,19 +15,19 @@ bill.
 
 [![HACS Default](https://img.shields.io/badge/HACS-Integration-blue)](https://hacs.xyz/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-green)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/alexisml/UTE-Tarifas)](https://github.com/alexisml/UTE-Tarifas/releases/latest)
+[![Release](https://img.shields.io/github/v/release/alexisml/ha-ute-tariffs)](https://github.com/alexisml/ha-ute-tariffs/releases/latest)
 
-[![HACS Validation](https://github.com/alexisml/UTE-Tarifas/actions/workflows/hacs-validate.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/hacs-validate.yml)
-[![Unit Tests](https://github.com/alexisml/UTE-Tarifas/actions/workflows/tests.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/tests.yml)
-[![Tests](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Falexisml%2F7de6801feff5497e0b488fa136d1035e%2Fraw%2Fute_tarifas_test_count.json)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/alexisml/UTE-Tarifas/graph/badge.svg)](https://codecov.io/gh/alexisml/UTE-Tarifas)
-[![Ruff](https://github.com/alexisml/UTE-Tarifas/actions/workflows/ruff.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/ruff.yml)
-[![Type Check](https://github.com/alexisml/UTE-Tarifas/actions/workflows/type-check.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/type-check.yml)
-[![Spell Check](https://github.com/alexisml/UTE-Tarifas/actions/workflows/spell-check.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/spell-check.yml)
-[![CodeQL](https://github.com/alexisml/UTE-Tarifas/actions/workflows/codeql.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/codeql.yml)
-[![Gitleaks](https://github.com/alexisml/UTE-Tarifas/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/alexisml/UTE-Tarifas/actions/workflows/gitleaks.yml)
-[![Dependabot](https://img.shields.io/badge/Dependabot-enabled-brightgreen?logo=dependabot)](https://github.com/alexisml/UTE-Tarifas/blob/main/.github/dependabot.yml)
-[![Lines of Code](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Falexisml%2F7de6801feff5497e0b488fa136d1035e%2Fraw%2Fute_tarifas_loc.json)](https://github.com/alexisml/UTE-Tarifas)
+[![HACS Validation](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/hacs-validate.yml/badge.svg)](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/hacs-validate.yml)
+[![Unit Tests](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/tests.yml/badge.svg)](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/tests.yml)
+[![Tests](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Falexisml%2F7de6801feff5497e0b488fa136d1035e%2Fraw%2Fute_tarifas_test_count.json)](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/alexisml/ha-ute-tariffs/graph/badge.svg)](https://codecov.io/gh/alexisml/ha-ute-tariffs)
+[![Ruff](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/ruff.yml/badge.svg)](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/ruff.yml)
+[![Type Check](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/type-check.yml/badge.svg)](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/type-check.yml)
+[![Spell Check](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/spell-check.yml/badge.svg)](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/spell-check.yml)
+[![CodeQL](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/codeql.yml/badge.svg)](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/codeql.yml)
+[![Gitleaks](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/alexisml/ha-ute-tariffs/actions/workflows/gitleaks.yml)
+[![Dependabot](https://img.shields.io/badge/Dependabot-enabled-brightgreen?logo=dependabot)](https://github.com/alexisml/ha-ute-tariffs/blob/main/.github/dependabot.yml)
+[![Lines of Code](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Falexisml%2F7de6801feff5497e0b488fa136d1035e%2Fraw%2Fute_tarifas_loc.json)](https://github.com/alexisml/ha-ute-tariffs)
 
 ---
 
@@ -76,7 +76,7 @@ All sensors are grouped under a single **UTE Tarifas** device in the HA UI.
 
 ### Via HACS (recommended)
 
-1. In HACS → **Custom repositories** → add `https://github.com/alexisml/UTE-Tarifas` as **Integration**.
+1. In HACS → **Custom repositories** → add `https://github.com/alexisml/ha-ute-tariffs` as **Integration**.
 2. Search **UTE Tarifas** and click **Download**.
 3. Restart Home Assistant.
 4. **Settings › Devices & Services › + Add Integration → UTE Tarifas**.
