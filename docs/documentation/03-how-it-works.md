@@ -11,7 +11,7 @@ flowchart LR
     COORD -->|"dt_util.now()\n(any timezone)"| CALC["TariffCalculator\nsnapshot()"]
     CALC -->|reads| PRICES["prices.py\nUTE_PRICE_RANGES\nUTE_SCHEDULE_RANGES"]
     CALC -->|"TariffSnapshot"| COORD
-    COORD -->|"CoordinatorPayload"| SENSORS["5 Sensor Entities\n(grouped under UTE Tarifas device)"]
+    COORD -->|"CoordinatorPayload"| SENSORS["15 Sensor Entities\n(5 main + 10 diagnostic,\ngrouped under UTE Tarifas device)"]
     SENSORS -->|state changes| AUTO["Home Assistant\nAutomations"]
     AUTO -->|turn on/off| DEVICES["Smart Devices\n(water heater, EV charger…)"]
 ```

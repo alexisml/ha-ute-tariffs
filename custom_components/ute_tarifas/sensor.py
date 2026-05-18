@@ -161,9 +161,11 @@ async def async_setup_entry(
 class UteTarifasSensor(CoordinatorEntity[UteTarifasCoordinator], SensorEntity):
     """A coordinator-backed UTE tariff sensor.
 
-    All five sensors belong to a single "UTE Tarifas" device so they are
+    All sensors belong to a single "UTE Tarifas" device so they are
     grouped together in the Home Assistant UI rather than appearing as
-    orphaned entities.
+    orphaned entities.  There are 5 main sensors (current cost, current
+    period, next change, next period, contract type) and 10 diagnostic
+    sensors (cost excl. IVA, IVA rate, and one per price tier).
     """
 
     _attr_has_entity_name = True

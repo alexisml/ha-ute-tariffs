@@ -55,8 +55,9 @@ class ScheduleRange:
 class PriceRange:
     """Price set (UYU/kWh per period, **excluding IVA**) valid within a date interval.
 
-    All prices are stored without IVA.  The coordinator applies :data:`IVA_RATE` to
-    produce the IVA-inclusive cost exposed to Home Assistant sensors.
+    All prices are stored without IVA.  :class:`TariffCalculator` applies
+    :data:`IVA_RATE` inside :meth:`~TariffCalculator.snapshot` to produce the
+    IVA-inclusive cost exposed to Home Assistant sensors.
 
     For the *Simple* contract three consumption tiers exist (monthly kWh thresholds
     from UTE's published tariff schedule):

@@ -4,10 +4,12 @@
 
 **HACS custom integration — residential UTE contracts only.**
 
-Exposes five Home Assistant sensors that track the current UTE electricity
-tariff (price and period), the next tariff change, and your contract type.
-Use these sensors in automations to shift high-consumption appliances to
-off-peak hours and save on your electricity bill.
+Exposes **15 Home Assistant sensors** — 5 main sensors (current tariff cost
+and period, next change time and period, contract type) plus 10 diagnostic
+sensors (price ex-IVA, IVA rate, and one per price tier) — that track the
+current UTE electricity tariff. Use the main sensors in automations to shift
+high-consumption appliances to off-peak hours and save on your electricity
+bill.
 
 [![HACS Default](https://img.shields.io/badge/HACS-Integration-blue)](https://hacs.xyz/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-green)](LICENSE)

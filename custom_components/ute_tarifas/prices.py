@@ -14,9 +14,19 @@ Updating prices
 Example::
 
     # Old entry (close it)
-    PriceRange(start=date(2026, 1, 1), end=date(2026, 11, 30), simple=8.5, ...),
+    PriceRange(
+        start=date(2026, 1, 1), end=date(2026, 11, 30),
+        simple_low=6.744, simple_mid=8.452, simple_high=10.539,
+        double_llano=4.771, double_punta=12.034,
+        triple_valle=2.443, triple_llano=5.172, triple_punta=12.034,
+    ),
     # New entry (append)
-    PriceRange(start=date(2026, 12, 1), end=date(2099, 12, 31), simple=9.2, ...),
+    PriceRange(
+        start=date(2026, 12, 1), end=date(2099, 12, 31),
+        simple_low=7.0, simple_mid=8.8, simple_high=11.0,
+        double_llano=5.0, double_punta=12.5,
+        triple_valle=2.5, triple_llano=5.4, triple_punta=12.5,
+    ),
 
 Updating a schedule (e.g. new punta hours from 2027-01-01)
 -----------------------------------------------------------

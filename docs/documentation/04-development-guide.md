@@ -49,7 +49,7 @@ flowchart TD
     INIT["__init__.py\nHA setup / unload"]
     CF["config_flow.py\nUI wizard + options"]
     COORD["coordinator.py\nPoll loop (60 s)"]
-    SENSOR["sensor.py\n5 sensor entities"]
+    SENSOR["sensor.py\n15 sensor entities\n(5 main + 10 diagnostic)"]
     TARIFF["tariff.py\nPure calculation engine"]
     PRICES["prices.py\nCanonical UTE data"]
     CONST["const.py\nConstants + enums"]
@@ -80,11 +80,26 @@ When UTE announces new residential rates:
 
 ```python
 # Before
-PriceRange(start=date(2026, 1, 1), end=date(2099, 12, 31), simple=8.5, ...),
+PriceRange(
+    start=date(2026, 1, 1), end=date(2099, 12, 31),
+    simple_low=6.744, simple_mid=8.452, simple_high=10.539,
+    double_llano=4.771, double_punta=12.034,
+    triple_valle=2.443, triple_llano=5.172, triple_punta=12.034,
+),
 
 # After (example: rates change on 2026-12-01)
-PriceRange(start=date(2026, 1, 1), end=date(2026, 11, 30), simple=8.5, ...),
-PriceRange(start=date(2026, 12, 1), end=date(2099, 12, 31), simple=9.2, ...),
+PriceRange(
+    start=date(2026, 1, 1), end=date(2026, 11, 30),
+    simple_low=6.744, simple_mid=8.452, simple_high=10.539,
+    double_llano=4.771, double_punta=12.034,
+    triple_valle=2.443, triple_llano=5.172, triple_punta=12.034,
+),
+PriceRange(
+    start=date(2026, 12, 1), end=date(2099, 12, 31),
+    simple_low=7.0, simple_mid=8.8, simple_high=11.0,
+    double_llano=5.0, double_punta=12.5,
+    triple_valle=2.5, triple_llano=5.4, triple_punta=12.5,
+),
 ```
 
 The `next_change_at` sensor will start counting down to `2026-12-01` as soon
