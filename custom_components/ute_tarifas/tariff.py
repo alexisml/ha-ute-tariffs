@@ -4,10 +4,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 import holidays
 
 from .const import ContractType, TariffPeriod
+
+# All schedule and holiday comparisons are performed in UY local time.
+# UTE tariff periods are defined by wall-clock hours in Uruguay, so any
+# datetime passed from the outside (which may carry a different timezone,
+# e.g. UTC when Home Assistant runs on a non-UY server) is converted to
+# this timezone before any date or time comparison is made.
+UY_TZ = ZoneInfo("America/Montevideo")
 
 
 @dataclass(frozen=True)
@@ -206,6 +214,15 @@ class TariffCalculator:
         return None
 
     def snapshot(self, now: datetime) -> TariffSnapshot:
+        """Return the tariff state at *now*.
+
+        *now* may carry any timezone.  It is converted to UY local time
+        (``America/Montevideo``) first so that schedule blocks, holiday
+        detection, and date-range comparisons all use the correct UY
+        calendar date and wall-clock hour — regardless of the timezone
+        configured on the Home Assistant server.
+        """
+        now = now.astimezone(UY_TZ)
         period = self._period_for_datetime(now)
         active_price = _active_price_range(now.date(), self._price_ranges)
         cost = self._price_for_period(period, active_price)
