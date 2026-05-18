@@ -228,11 +228,12 @@ def test_simple_contract_returns_simple_period_and_cost() -> None:
         contract_type=ContractType.SIMPLE,
         price_ranges=_price_ranges(),
         schedule_ranges=_all_day_schedule(TariffPeriod.SIMPLE),
+        monthly_kwh=350,  # mid tier
     )
     snap = calc.snapshot(datetime(2026, 4, 10, 18, 30, tzinfo=_UY))
 
     assert snap.current_period == TariffPeriod.SIMPLE
-    assert snap.current_cost_excl_iva == 7.0  # simple_mid, monthly_kwh=350 (default)
+    assert snap.current_cost_excl_iva == 7.0  # simple_mid, monthly_kwh=350
     assert snap.next_period == TariffPeriod.SIMPLE
     assert snap.next_change_at == datetime(2026, 4, 11, 0, 0, tzinfo=_UY)
 
@@ -339,8 +340,8 @@ def test_double_contract_uses_canonical_defaults() -> None:
         price_ranges=UTE_PRICE_RANGES,
         schedule_ranges=UTE_SCHEDULE_RANGES[ContractType.DOUBLE],
     )
-    # 2026-04-06 is Monday (workday), 10:00 → punta in canonical DOUBLE schedule
-    snap = calc.snapshot(datetime(2026, 4, 6, 10, 0, tzinfo=_UY))
+    # 2026-04-06 is Monday (workday), 19:00 → punta in canonical DOUBLE schedule (18:00–22:00)
+    snap = calc.snapshot(datetime(2026, 4, 6, 19, 0, tzinfo=_UY))
     assert snap.current_period == TariffPeriod.PUNTA
 
 
@@ -375,7 +376,7 @@ def test_triple_contract_uses_canonical_defaults() -> None:
         price_ranges=UTE_PRICE_RANGES,
         schedule_ranges=UTE_SCHEDULE_RANGES[ContractType.TRIPLE],
     )
-    # 2026-04-06 Monday 10:00 → llano in canonical TRIPLE schedule
+    # 2026-04-06 Monday 10:00 → llano in canonical TRIPLE schedule (07:00–18:00 is llano)
     snap = calc.snapshot(datetime(2026, 4, 6, 10, 0, tzinfo=_UY))
     assert snap.current_period == TariffPeriod.LLANO
 
@@ -794,3 +795,55 @@ def test_is_holiday_invalid_country_returns_false(caplog: pytest.LogCaptureFixtu
 
     assert snap.current_period == TariffPeriod.LLANO
     assert any("XX" in message for message in caplog.messages)
+
+
+# ---------------------------------------------------------------------------
+# active_price_range — all tier prices in snapshot
+# ---------------------------------------------------------------------------
+
+
+def test_snapshot_includes_active_price_range() -> None:
+    """TariffSnapshot.active_price_range exposes every tier price from prices.py."""
+    pr = _price_ranges()
+    calc = TariffCalculator(
+        contract_type=ContractType.DOUBLE,
+        price_ranges=pr,
+        schedule_ranges=_make_schedule(
+            "00:00-08:00:llano,08:00-22:00:punta,22:00-00:00:llano",
+            dp=TariffPeriod.LLANO,
+        ),
+    )
+    snap = calc.snapshot(datetime(2026, 4, 6, 9, 0, tzinfo=_UY))
+
+    # The active price range is the first entry (Jan–May 2026)
+    assert snap.active_price_range.simple_low == 5.0
+    assert snap.active_price_range.simple_mid == 7.0
+    assert snap.active_price_range.simple_high == 9.0
+    assert snap.active_price_range.double_llano == 5.0
+    assert snap.active_price_range.double_punta == 9.0
+    assert snap.active_price_range.triple_valle == 4.0
+    assert snap.active_price_range.triple_llano == 6.0
+    assert snap.active_price_range.triple_punta == 10.0
+
+
+def test_monthly_kwh_setter_updates_simple_tier() -> None:
+    """TariffCalculator.monthly_kwh setter changes the Simple tier at runtime."""
+    pr = _price_ranges()
+    calc = TariffCalculator(
+        contract_type=ContractType.SIMPLE,
+        price_ranges=pr,
+        schedule_ranges=_all_day_schedule(TariffPeriod.SIMPLE),
+        monthly_kwh=0,
+    )
+    ts = datetime(2026, 4, 10, 12, 0, tzinfo=_UY)
+
+    # Default: 0 kWh → simple_low
+    assert calc.snapshot(ts).current_cost_excl_iva == 5.0
+
+    # Update to mid tier
+    calc.monthly_kwh = 350
+    assert calc.snapshot(ts).current_cost_excl_iva == 7.0
+
+    # Update to high tier
+    calc.monthly_kwh = 700
+    assert calc.snapshot(ts).current_cost_excl_iva == 9.0

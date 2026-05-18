@@ -12,13 +12,12 @@ from homeassistant.data_entry_flow import FlowResult
 from .const import (
     CONF_CONTRACT_TYPE,
     CONF_COUNTRY,
-    CONF_MONTHLY_KWH,
+    CONF_MONTHLY_KWH_ENTITY,
     CONF_SCHEDULE_HOLIDAY,
     CONF_SCHEDULE_WEEKEND,
     CONF_SCHEDULE_WORKDAY,
     CONF_USE_NATIONAL_HOLIDAYS,
     DEFAULT_COUNTRY,
-    DEFAULT_MONTHLY_KWH,
     DEFAULT_USE_NATIONAL_HOLIDAYS,
     DOMAIN,
     ContractType,
@@ -100,7 +99,9 @@ class UteTarifasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_SCHEDULE_HOLIDAY: user_input.get(CONF_SCHEDULE_HOLIDAY, "").strip(),
                         CONF_COUNTRY: country,
                         CONF_USE_NATIONAL_HOLIDAYS: user_input[CONF_USE_NATIONAL_HOLIDAYS],
-                        CONF_MONTHLY_KWH: user_input.get(CONF_MONTHLY_KWH, DEFAULT_MONTHLY_KWH),
+                        CONF_MONTHLY_KWH_ENTITY: (
+                            user_input.get(CONF_MONTHLY_KWH_ENTITY, "").strip()
+                        ),
                     },
                 )
 
@@ -120,10 +121,7 @@ class UteTarifasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_USE_NATIONAL_HOLIDAYS,
                         default=DEFAULT_USE_NATIONAL_HOLIDAYS,
                     ): bool,
-                    vol.Optional(
-                        CONF_MONTHLY_KWH,
-                        default=DEFAULT_MONTHLY_KWH,
-                    ): vol.All(int, vol.Range(min=0)),
+                    vol.Optional(CONF_MONTHLY_KWH_ENTITY, default=""): str,
                 }
             ),
         )
@@ -168,7 +166,9 @@ class UteTarifasOptionsFlow(config_entries.OptionsFlow):
                         CONF_SCHEDULE_WORKDAY: user_input.get(CONF_SCHEDULE_WORKDAY, "").strip(),
                         CONF_SCHEDULE_WEEKEND: user_input.get(CONF_SCHEDULE_WEEKEND, "").strip(),
                         CONF_SCHEDULE_HOLIDAY: user_input.get(CONF_SCHEDULE_HOLIDAY, "").strip(),
-                        CONF_MONTHLY_KWH: user_input.get(CONF_MONTHLY_KWH, DEFAULT_MONTHLY_KWH),
+                        CONF_MONTHLY_KWH_ENTITY: (
+                            user_input.get(CONF_MONTHLY_KWH_ENTITY, "").strip()
+                        ),
                     },
                 )
 
@@ -180,9 +180,9 @@ class UteTarifasOptionsFlow(config_entries.OptionsFlow):
             vol.Optional(CONF_SCHEDULE_WEEKEND, default=_default(CONF_SCHEDULE_WEEKEND)): str,
             vol.Optional(CONF_SCHEDULE_HOLIDAY, default=_default(CONF_SCHEDULE_HOLIDAY)): str,
             vol.Optional(
-                CONF_MONTHLY_KWH,
-                default=_default(CONF_MONTHLY_KWH) or DEFAULT_MONTHLY_KWH,
-            ): vol.All(int, vol.Range(min=0)),
+                CONF_MONTHLY_KWH_ENTITY,
+                default=_default(CONF_MONTHLY_KWH_ENTITY) or "",
+            ): str,
         }
         return self.async_show_form(
             step_id="init",

@@ -57,20 +57,20 @@ _VALLE_ALL_DAY: list[TimeBlock] = [
     TimeBlock(time(0, 0), time(0, 0), TariffPeriod.VALLE),
 ]
 
-# Doble Horario workday: llano (00:00–07:00, 17:00–24:00) and punta (07:00–17:00).
+# Doble Horario workday: llano (00:00–18:00, 22:00–24:00) and punta (18:00–22:00).
 _DOUBLE_WORKDAY: list[TimeBlock] = [
-    TimeBlock(time(0, 0), time(7, 0), TariffPeriod.LLANO),
-    TimeBlock(time(7, 0), time(17, 0), TariffPeriod.PUNTA),
+    TimeBlock(time(0, 0), time(18, 0), TariffPeriod.LLANO),
+    TimeBlock(time(18, 0), time(22, 0), TariffPeriod.PUNTA),
     # end=time(0, 0) is the "until midnight" sentinel; see _contains() in tariff.py
-    TimeBlock(time(17, 0), time(0, 0), TariffPeriod.LLANO),
+    TimeBlock(time(22, 0), time(0, 0), TariffPeriod.LLANO),
 ]
 
 _TRIPLE_WORKDAY: list[TimeBlock] = [
     TimeBlock(time(0, 0), time(7, 0), TariffPeriod.VALLE),
-    TimeBlock(time(7, 0), time(17, 0), TariffPeriod.LLANO),
-    TimeBlock(time(17, 0), time(21, 0), TariffPeriod.PUNTA),
+    TimeBlock(time(7, 0), time(18, 0), TariffPeriod.LLANO),
+    TimeBlock(time(18, 0), time(22, 0), TariffPeriod.PUNTA),
     # end=time(0, 0) is the "until midnight" sentinel; see _contains() in tariff.py
-    TimeBlock(time(21, 0), time(0, 0), TariffPeriod.LLANO),
+    TimeBlock(time(22, 0), time(0, 0), TariffPeriod.LLANO),
 ]
 
 # ---------------------------------------------------------------------------

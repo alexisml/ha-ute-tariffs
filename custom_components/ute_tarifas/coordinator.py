@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .const import DEFAULT_MONTHLY_KWH, IVA_RATE, ContractType, TariffPeriod
+from .const import IVA_RATE, ContractType, TariffPeriod
 from .prices import UTE_PRICE_RANGES, UTE_SCHEDULE_RANGES
 from .tariff import (
     ScheduleRange,
@@ -110,6 +110,7 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
 
     def __init__(self, hass: HomeAssistant, config: dict) -> None:
         contract_type = ContractType(config["contract_type"])
+        self._monthly_kwh_entity: str = config.get("monthly_kwh_entity", "")
         self._calculator = TariffCalculator(
             contract_type=contract_type,
             price_ranges=UTE_PRICE_RANGES,
@@ -121,7 +122,7 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
             ),
             country=config.get("country", "UY"),
             use_national_holidays=config.get("use_national_holidays", True),
-            monthly_kwh=config.get("monthly_kwh", DEFAULT_MONTHLY_KWH),
+            monthly_kwh=0,
             iva_rate=IVA_RATE,
         )
         self._contract_type = contract_type
@@ -136,10 +137,29 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
     async def _async_update_data(self) -> CoordinatorPayload:
         """Fetch the latest tariff snapshot.
 
+        When a monthly consumption entity is configured, reads its current state
+        to select the correct Simple tariff tier.  Falls back to the cheapest
+        tier (0 kWh) when the entity is unavailable or not set.
+
         Wraps :class:`ValueError` (raised when no price/schedule range covers
         the current date) as :class:`UpdateFailed` so the coordinator retries
         on the next poll instead of crashing the integration.
         """
+        if self._monthly_kwh_entity:
+            state = self.hass.states.get(self._monthly_kwh_entity)
+            if state and state.state not in ("unknown", "unavailable"):
+                try:
+                    self._calculator.monthly_kwh = int(float(state.state))
+                except (ValueError, TypeError):
+                    _LOGGER.warning(
+                        "Could not parse monthly consumption from entity %s (state=%r); "
+                        "falling back to cheapest Simple tier",
+                        self._monthly_kwh_entity,
+                        state.state,
+                    )
+                    self._calculator.monthly_kwh = 0
+            else:
+                self._calculator.monthly_kwh = 0
         try:
             snapshot = self._calculator.snapshot(dt_util.now())
         except ValueError as err:

@@ -90,6 +90,8 @@ class TariffSnapshot:
     ``current_cost_excl_iva`` is the raw price stored in ``prices.py`` (without IVA)
     and is exposed as a diagnostic sensor.
     ``iva_rate`` is the fractional IVA rate applied (e.g. ``0.22`` for 22%).
+    ``active_price_range`` is the full :class:`PriceRange` currently in effect,
+    exposing every tariff tier (Simple/Double/Triple) as diagnostic sensors.
     """
 
     current_period: TariffPeriod
@@ -98,6 +100,7 @@ class TariffSnapshot:
     iva_rate: float
     next_change_at: datetime
     next_period: TariffPeriod
+    active_price_range: PriceRange
 
 
 def _parse_time(value: str) -> time:
@@ -222,7 +225,7 @@ class TariffCalculator:
         schedule_ranges: list[ScheduleRange],
         country: str = "UY",
         use_national_holidays: bool = True,
-        monthly_kwh: int = 350,
+        monthly_kwh: int = 0,
         iva_rate: float = 0.22,
     ) -> None:
         self._contract_type = contract_type
@@ -236,6 +239,16 @@ class TariffCalculator:
         # the holidays object on every _is_holiday() call within a snapshot().
         # Capped at _HOLIDAY_CACHE_MAX_SIZE entries (one per year in practice).
         self._holiday_cache: dict[tuple[str, int], frozenset[date]] = {}
+
+    @property
+    def monthly_kwh(self) -> int:
+        """Return the monthly consumption estimate used for Simple tier selection."""
+        return self._monthly_kwh
+
+    @monthly_kwh.setter
+    def monthly_kwh(self, value: int) -> None:
+        """Update the monthly consumption estimate (e.g. read from an HA entity)."""
+        self._monthly_kwh = value
 
     # Maximum number of (country, year) entries kept in the holiday cache.
     # In practice only 1–2 years are ever needed per HA instance lifetime.
@@ -370,6 +383,7 @@ class TariffCalculator:
                 iva_rate=self._iva_rate,
                 next_change_at=next_tariff_data_change,
                 next_period=next_period,
+                active_price_range=active_price,
             )
 
         return TariffSnapshot(
@@ -379,4 +393,5 @@ class TariffCalculator:
             iva_rate=self._iva_rate,
             next_change_at=schedule_change_at,
             next_period=schedule_next_period,
+            active_price_range=active_price,
         )

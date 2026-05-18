@@ -40,11 +40,12 @@
 | Field | Required | Default | Description |
 |-------|----------|---------|-------------|
 | **Residential contract type** | Yes | `simple` | Your UTE plan: `simple`, `double`, or `triple`. |
-| **Workday schedule override** | No | *(built-in)* | Custom time-of-use blocks for weekdays. Leave blank to use the canonical UTE schedule. |
-| **Weekend schedule override** | No | *(all-valle)* | Custom blocks for Saturdays and Sundays. |
-| **Holiday schedule override** | No | *(all-valle)* | Custom blocks for national holidays. |
+| **Workday schedule override** | No | *(built-in)* | Custom time-of-use blocks for weekdays. Leave blank to use the canonical UTE schedule (punta 18:00–22:00). |
+| **Weekend schedule override** | No | *(all-llano / all-valle)* | Custom blocks for Saturdays and Sundays. |
+| **Holiday schedule override** | No | *(all-llano / all-valle)* | Custom blocks for national holidays. |
 | **Holiday country code** | No | `UY` | ISO 3166-1 alpha-2 code used to identify national holidays (e.g. `UY`, `AR`). |
 | **Apply national holidays** | No | `true` | When enabled, holidays use the holiday schedule instead of the weekday schedule. |
+| **Monthly consumption entity** | No | *(cheapest Simple tier)* | Entity ID of a sensor that reports your monthly kWh consumption (e.g. a utility meter). Used only for the Simple contract to select the consumption tier (0–100, 101–600, or 601+ kWh/month). If left blank or the entity is unavailable, the cheapest tier is used. |
 
 ### Schedule string format
 
@@ -60,13 +61,13 @@ around to the next calendar day).
 **Example — standard Double workday schedule:**
 
 ```
-00:00-07:00:valle,07:00-17:00:punta,17:00-00:00:valle
+00:00-18:00:llano,18:00-22:00:punta,22:00-00:00:llano
 ```
 
 **Example — standard Triple workday schedule:**
 
 ```
-00:00-07:00:valle,07:00-17:00:llano,17:00-21:00:punta,21:00-00:00:llano
+00:00-07:00:valle,07:00-18:00:llano,18:00-22:00:punta,22:00-00:00:llano
 ```
 
 Leaving a schedule field blank falls back to the built-in canonical schedule
@@ -86,13 +87,26 @@ default.
 ## Verifying the install
 
 After setup, a **UTE Tarifas** device should appear under
-**Settings › Devices & Services › Devices**, containing five sensors:
+**Settings › Devices & Services › Devices**, containing the following sensors:
 
-- `sensor.ute_tarifas_current_cost`
+**Main sensors:**
+- `sensor.ute_tarifas_current_cost` (UYU/kWh, **including IVA**)
 - `sensor.ute_tarifas_current_period`
 - `sensor.ute_tarifas_next_change`
 - `sensor.ute_tarifas_next_period`
 - `sensor.ute_tarifas_contract_type`
+
+**Diagnostic sensors** (visible in the *Diagnostics* section of the device page):
+- `sensor.ute_tarifas_current_cost_excl_iva`
+- `sensor.ute_tarifas_iva_rate`
+- `sensor.ute_tarifas_price_simple_low`
+- `sensor.ute_tarifas_price_simple_mid`
+- `sensor.ute_tarifas_price_simple_high`
+- `sensor.ute_tarifas_price_double_llano`
+- `sensor.ute_tarifas_price_double_punta`
+- `sensor.ute_tarifas_price_triple_valle`
+- `sensor.ute_tarifas_price_triple_llano`
+- `sensor.ute_tarifas_price_triple_punta`
 
 All sensors refresh every 60 seconds.
 

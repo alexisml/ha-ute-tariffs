@@ -118,9 +118,9 @@ and all-day weekend/holiday blocks — it always matches any time.
 
 | Block | Period |
 |-------|--------|
-| 00:00 – 07:00 | Llano |
-| 07:00 – 17:00 | Punta |
-| 17:00 – 00:00 | Llano |
+| 00:00 – 18:00 | Llano |
+| 18:00 – 22:00 | Punta |
+| 22:00 – 00:00 | Llano |
 
 Weekends and holidays are **all-llano** for Double.
 
@@ -129,9 +129,9 @@ Weekends and holidays are **all-llano** for Double.
 | Block | Period |
 |-------|--------|
 | 00:00 – 07:00 | Valle |
-| 07:00 – 17:00 | Llano |
-| 17:00 – 21:00 | Punta |
-| 21:00 – 00:00 | Llano |
+| 07:00 – 18:00 | Llano |
+| 18:00 – 22:00 | Punta |
+| 22:00 – 00:00 | Llano |
 
 Weekends and holidays are **all-valle** for Triple.
 
@@ -161,14 +161,9 @@ toggle.  The country code defaults to `UY` but can be changed to any ISO
 ## Prices, IVA, and tiers
 
 All prices stored in `prices.py` are in **UYU/kWh excluding IVA** (Uruguay's
-22 % *Impuesto al Valor Agregado*).  The integration applies IVA automatically
-and exposes two cost sensors:
-
-| Sensor | Description |
-|--------|-------------|
-| `current_cost` | Price per kWh **including IVA** (22 %) — the figure on your electricity bill. |
-| `current_cost_excl_iva` | Raw price **excluding IVA** — diagnostic entity. |
-| `iva_rate` | Current IVA rate (22 %) — diagnostic entity. |
+22 % *Impuesto al Valor Agregado*).  The integration applies IVA automatically.
+Every tariff tier for all contract types is also exposed as a diagnostic sensor
+so you can see each rate at a glance — see the sensor table below.
 
 ### Simple contract tiers
 
@@ -180,23 +175,33 @@ The *Simple* tariff has three consumption tiers (monthly kWh):
 | Mid | 101 – 600 kWh/month | 8.452 UYU/kWh |
 | High | 601+ kWh/month | 10.539 UYU/kWh |
 
-Configure your expected monthly consumption in the **Estimated monthly consumption (kWh)**
-field during setup (or update it in the options flow).  The integration selects the
-correct tier automatically.  For Double and Triple contracts this field is ignored.
+Link a **Monthly consumption entity** in the setup form — an HA sensor (e.g. a
+utility meter) that reports your total monthly kWh.  The integration reads its
+state at each update to select the correct tier automatically.  If the field is
+left blank or the entity is unavailable, the cheapest tier (Low) is used.
+For Double and Triple contracts this field is ignored.
 
 ---
 
-## The seven sensors
+## The sensors
 
 | Key | Category | Unit | Description |
 |-----|----------|------|-------------|
 | `current_cost` | — | UYU/kWh | Price per kWh right now, **including IVA**. |
-| `current_cost_excl_iva` | Diagnostic | UYU/kWh | Price per kWh right now, **excluding IVA**. |
-| `iva_rate` | Diagnostic | % | IVA rate applied (22 %). |
 | `current_period` | — | — | `valle`, `llano`, `punta`, or `simple`. |
 | `next_change` | — | timestamp | When the current period or pricing will next change. |
 | `next_period` | — | — | The period that will be active after `next_change`. |
 | `contract_type` | — | — | `simple`, `double`, or `triple`. |
+| `current_cost_excl_iva` | Diagnostic | UYU/kWh | Price per kWh right now, **excluding IVA**. |
+| `iva_rate` | Diagnostic | % | IVA rate applied (22 %). |
+| `price_simple_low` | Diagnostic | UYU/kWh | Simple — low tier rate excl. IVA (0–100 kWh/month). |
+| `price_simple_mid` | Diagnostic | UYU/kWh | Simple — mid tier rate excl. IVA (101–600 kWh/month). |
+| `price_simple_high` | Diagnostic | UYU/kWh | Simple — high tier rate excl. IVA (601+ kWh/month). |
+| `price_double_llano` | Diagnostic | UYU/kWh | Double — llano rate excl. IVA. |
+| `price_double_punta` | Diagnostic | UYU/kWh | Double — punta rate excl. IVA. |
+| `price_triple_valle` | Diagnostic | UYU/kWh | Triple — valle rate excl. IVA. |
+| `price_triple_llano` | Diagnostic | UYU/kWh | Triple — llano rate excl. IVA. |
+| `price_triple_punta` | Diagnostic | UYU/kWh | Triple — punta rate excl. IVA. |
 
 `next_change` takes whichever is **earliest** — the next time-of-use block
 boundary where the period actually changes *or* a future pricing/schedule update
