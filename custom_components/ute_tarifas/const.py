@@ -7,15 +7,18 @@ from enum import StrEnum
 DOMAIN = "ute_tarifas"
 
 CONF_CONTRACT_TYPE = "contract_type"
-CONF_SCHEDULE_WORKDAY = "schedule_workday"
-CONF_SCHEDULE_WEEKEND = "schedule_weekend"
-CONF_SCHEDULE_HOLIDAY = "schedule_holiday"
-CONF_COUNTRY = "country"
+CONF_PUNTA_SCHEDULE = "punta_schedule"
 CONF_USE_NATIONAL_HOLIDAYS = "use_national_holidays"
 CONF_MONTHLY_KWH_ENTITY = "monthly_kwh_entity"
 
+# Country is always Uruguay — not user-configurable.
 DEFAULT_COUNTRY = "UY"
 DEFAULT_USE_NATIONAL_HOLIDAYS = True
+
+# Punta window options (format: "start-end", always 4-hour blocks).
+# Source: https://www.ute.com.uy/Tarifas — canonical is 18:00–22:00.
+PUNTA_SCHEDULE_OPTIONS = ["17-21", "18-22", "19-23"]
+DEFAULT_PUNTA_SCHEDULE = "18-22"
 
 # IVA (Impuesto al Valor Agregado) rate applied to UTE tariffs in Uruguay.
 IVA_RATE = 0.22
