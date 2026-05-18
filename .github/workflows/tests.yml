@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -58,7 +59,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Extract badge metrics
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch'
         run: |
           TEST_COUNT=$(python -c "
           import xml.etree.ElementTree as ET
@@ -72,24 +73,24 @@ jobs:
           echo "LOC=$LOC" >> "$GITHUB_ENV"
 
       - name: Update test count badge
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.BADGE_GIST_ID != ''
+        if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch'
         uses: schneegans/dynamic-badges-action@v1.7.0
         continue-on-error: true
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: ${{ vars.BADGE_GIST_ID }}
+          gistID: 7107fdc2a20719f22bc6fe9f80eba710
           filename: ute_tarifas_test_count.json
           label: Tests
           message: ${{ env.TEST_COUNT }} passed
           color: brightgreen
 
       - name: Update lines-of-code badge
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.BADGE_GIST_ID != ''
+        if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch'
         uses: schneegans/dynamic-badges-action@v1.7.0
         continue-on-error: true
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: ${{ vars.BADGE_GIST_ID }}
+          gistID: 7107fdc2a20719f22bc6fe9f80eba710
           filename: ute_tarifas_loc.json
           label: Lines of code
           message: ${{ env.LOC }}
