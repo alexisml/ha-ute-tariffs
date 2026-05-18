@@ -13,8 +13,8 @@
 ## Local setup
 
 ```bash
-git clone https://github.com/alexisml/UTE-Tarifas.git
-cd UTE-Tarifas
+git clone https://github.com/alexisml/ha-ute-tariffs.git
+cd ha-ute-tariffs
 pip install -e ".[dev]"
 ```
 

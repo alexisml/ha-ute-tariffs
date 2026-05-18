@@ -15,7 +15,7 @@ Only the latest release receives security fixes. Older versions are not maintain
 
 **Please do not open a public GitHub issue for security vulnerabilities.**
 
-Report security vulnerabilities using [GitHub's private vulnerability reporting](https://github.com/alexisml/UTE-Tarifas/security/advisories/new). This keeps the disclosure private until a fix is available.
+Report security vulnerabilities using [GitHub's private vulnerability reporting](https://github.com/alexisml/ha-ute-tariffs/security/advisories/new). This keeps the disclosure private until a fix is available.
 
 Include:
 
