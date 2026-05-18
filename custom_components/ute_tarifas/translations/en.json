@@ -42,13 +42,15 @@
           "schedule_workday": "Workday schedule override",
           "schedule_weekend": "Weekend schedule override",
           "schedule_holiday": "Holiday schedule override",
-          "monthly_kwh_entity": "Monthly consumption entity (optional)"
+          "monthly_kwh_entity": "Monthly consumption entity (optional)",
+          "use_national_holidays": "Apply national holidays"
         },
         "data_description": {
           "schedule_workday": "Leave blank to use the built-in UTE workday schedule.",
           "schedule_weekend": "Leave blank to use the built-in UTE weekend schedule.",
           "schedule_holiday": "Leave blank to use the built-in UTE holiday schedule.",
-          "monthly_kwh_entity": "Entity ID of a sensor that reports monthly kWh consumption. If left blank or unavailable, the cheapest Simple tier is used."
+          "monthly_kwh_entity": "Entity ID of a sensor that reports monthly kWh consumption. If left blank or unavailable, the cheapest Simple tier is used.",
+          "use_national_holidays": "When enabled, national holidays follow the holiday schedule instead of the weekday schedule."
         }
       }
     },

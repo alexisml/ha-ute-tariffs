@@ -43,9 +43,10 @@ Common causes:
 
 ## Holidays are not being detected
 
-1. Confirm **Apply national holidays** is enabled in the integration options.
-2. Confirm the **Holiday country code** is `UY` (or the correct code for your
-   country).
+1. Confirm **Apply national holidays** is enabled. You can toggle this in the
+   integration options: **Settings › Devices & Services › UTE Tarifas › Configure**.
+2. The country is fixed to `UY` (Uruguay) — the `holidays` package is queried
+   for Uruguayan national holidays.
 3. The `holidays` package must recognise the date as a holiday.  You can test
    in Python:
    ```python

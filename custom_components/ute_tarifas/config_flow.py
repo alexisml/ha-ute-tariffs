@@ -137,9 +137,9 @@ class UteTarifasConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class UteTarifasOptionsFlow(config_entries.OptionsFlow):
-    """Allow the user to update schedule overrides after initial setup.
+    """Allow the user to update schedule overrides and holiday settings after initial setup.
 
-    Clearing a schedule field reverts that day type to the built-in canonical
+    Clearing a schedule field reverts that day type to the built-in default
     UTE schedule defined in ``prices.py``.
     """
 
@@ -149,7 +149,7 @@ class UteTarifasOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Show and process the schedule-override form."""
+        """Show and process the schedule-override and holiday-settings form."""
         errors: dict[str, str] = {}
         data = self.config_entry.data
         options = self.config_entry.options
@@ -171,6 +171,7 @@ class UteTarifasOptionsFlow(config_entries.OptionsFlow):
                         CONF_MONTHLY_KWH_ENTITY: (
                             user_input.get(CONF_MONTHLY_KWH_ENTITY, "").strip()
                         ),
+                        CONF_USE_NATIONAL_HOLIDAYS: user_input[CONF_USE_NATIONAL_HOLIDAYS],
                     },
                 )
 
@@ -185,6 +186,13 @@ class UteTarifasOptionsFlow(config_entries.OptionsFlow):
                 CONF_MONTHLY_KWH_ENTITY,
                 default=_default(CONF_MONTHLY_KWH_ENTITY) or "",
             ): str,
+            vol.Optional(
+                CONF_USE_NATIONAL_HOLIDAYS,
+                default=options.get(
+                    CONF_USE_NATIONAL_HOLIDAYS,
+                    data.get(CONF_USE_NATIONAL_HOLIDAYS, DEFAULT_USE_NATIONAL_HOLIDAYS),
+                ),
+            ): bool,
         }
         return self.async_show_form(
             step_id="init",

@@ -79,8 +79,9 @@ updated.
 ## Updating schedule overrides later
 
 Go to **Settings › Devices & Services › UTE Tarifas › Configure** to open the
-options flow.  Clearing a field reverts that day type to the default UTE
-schedule.
+options flow.  From there you can update schedule overrides, the monthly
+consumption entity, and the **Apply national holidays** toggle.  Clearing a
+schedule field reverts that day type to the default UTE schedule.
 
 ---
 

@@ -42,13 +42,15 @@
           "schedule_workday": "Horario personalizado días hábiles",
           "schedule_weekend": "Horario personalizado fin de semana",
           "schedule_holiday": "Horario personalizado feriados",
-          "monthly_kwh_entity": "Entidad de consumo mensual (opcional)"
+          "monthly_kwh_entity": "Entidad de consumo mensual (opcional)",
+          "use_national_holidays": "Aplicar feriados nacionales"
         },
         "data_description": {
           "schedule_workday": "Dejá en blanco para usar el horario estándar de UTE en días hábiles.",
           "schedule_weekend": "Dejá en blanco para usar el horario estándar de UTE los fines de semana.",
           "schedule_holiday": "Dejá en blanco para usar el horario estándar de UTE en feriados.",
-          "monthly_kwh_entity": "ID de la entidad que reporta el consumo mensual en kWh. Si no está disponible, se usa el tramo más económico del contrato Simple."
+          "monthly_kwh_entity": "ID de la entidad que reporta el consumo mensual en kWh. Si no está disponible, se usa el tramo más económico del contrato Simple.",
+          "use_national_holidays": "Cuando está activado, los feriados nacionales usan el horario de feriados en lugar del horario de días hábiles."
         }
       }
     },

@@ -10,7 +10,20 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .const import IVA_RATE, ContractType, TariffPeriod
+from .const import (
+    CONF_CONTRACT_TYPE,
+    CONF_COUNTRY,
+    CONF_MONTHLY_KWH_ENTITY,
+    CONF_SCHEDULE_HOLIDAY,
+    CONF_SCHEDULE_WEEKEND,
+    CONF_SCHEDULE_WORKDAY,
+    CONF_USE_NATIONAL_HOLIDAYS,
+    DEFAULT_COUNTRY,
+    DEFAULT_USE_NATIONAL_HOLIDAYS,
+    IVA_RATE,
+    ContractType,
+    TariffPeriod,
+)
 from .prices import UTE_PRICE_RANGES, UTE_SCHEDULE_RANGES
 from .tariff import (
     ScheduleRange,
@@ -111,19 +124,21 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
     """
 
     def __init__(self, hass: HomeAssistant, config: dict) -> None:
-        contract_type = ContractType(config["contract_type"])
-        self._monthly_kwh_entity: str = config.get("monthly_kwh_entity", "")
+        contract_type = ContractType(config[CONF_CONTRACT_TYPE])
+        self._monthly_kwh_entity: str = config.get(CONF_MONTHLY_KWH_ENTITY, "")
         self._calculator = TariffCalculator(
             contract_type=contract_type,
             price_ranges=UTE_PRICE_RANGES,
             schedule_ranges=_build_schedule_ranges(
                 contract_type,
-                config.get("schedule_workday", ""),
-                config.get("schedule_weekend", ""),
-                config.get("schedule_holiday", ""),
+                config.get(CONF_SCHEDULE_WORKDAY, ""),
+                config.get(CONF_SCHEDULE_WEEKEND, ""),
+                config.get(CONF_SCHEDULE_HOLIDAY, ""),
             ),
-            country=config.get("country", "UY"),
-            use_national_holidays=config.get("use_national_holidays", True),
+            country=config.get(CONF_COUNTRY, DEFAULT_COUNTRY),
+            use_national_holidays=config.get(
+                CONF_USE_NATIONAL_HOLIDAYS, DEFAULT_USE_NATIONAL_HOLIDAYS
+            ),
             monthly_kwh=0,
             iva_rate=IVA_RATE,
         )
