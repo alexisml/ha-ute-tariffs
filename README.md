@@ -30,13 +30,13 @@ of your electricity consumption.
 
 ---
 
-## 🤖 AI Disclosure
+> ## 🤖 AI Disclosure
 
-A significant portion of this project — including code, documentation, and
-design — was developed with the assistance of AI tools (GitHub Copilot /
-large-language models). All AI-generated output has been reviewed, but users
-and contributors should audit the code independently before relying on it in
-production environments.
+> A significant portion of this project — including code, documentation, and
+> design — was developed with the assistance of AI tools (GitHub Copilot /
+> large-language models). All AI-generated output has been reviewed, but users
+> and contributors should audit the code independently before relying on it in
+> production environments.
 
 ---
 
