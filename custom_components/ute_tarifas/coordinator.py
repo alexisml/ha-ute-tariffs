@@ -106,7 +106,7 @@ class UteTarifasCoordinator(DataUpdateCoordinator[CoordinatorPayload]):
 
     Prices and schedules are read from ``prices.py`` (the single source of
     truth).  The punta window can be adjusted via the options flow; all other
-    schedule details (weekend/holiday all-llano or all-valle) follow the
+    schedule details (weekend/holiday no-punta defaults) follow the
     canonical UTE rules.
     """
 

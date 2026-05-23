@@ -133,7 +133,9 @@ Weekends and holidays are **all-llano** for Double.
 | 18:00 – 22:00 | Punta |
 | 22:00 – 00:00 | Llano |
 
-Weekends and holidays are **all-valle** for Triple.
+Weekends and holidays have **no punta** for Triple:
+- 00:00 – 07:00 → Valle
+- 07:00 – 00:00 → Llano
 
 The punta window can be shifted via the **Punta (peak) window** option in the
 integration settings.  Available options are `17-21`, `18-22` (default), and
