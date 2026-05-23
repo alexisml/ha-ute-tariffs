@@ -56,8 +56,9 @@ section that fits your needs.
   the repository is updated; no user action is required.
 - **All time comparisons use UY timezone** (`America/Montevideo`) regardless of
   the timezone configured on your Home Assistant server.
-- **Weekends and holidays are always all-llano** for Double contracts and
-  **all-valle** for Triple contracts (standard UTE residential rule).
+- **Weekends and holidays are always all-llano** for Double contracts. For
+  Triple contracts they have **no punta**: Valle from `00:00–07:00` and Llano
+  from `07:00–00:00`.
 - **IVA (22 %)** is applied automatically.  `current_cost` always shows the
   IVA-inclusive price — the figure you see on your electricity bill.
 - **Punta window** can be adjusted for Double/Triple contracts via *Settings ›

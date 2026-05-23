@@ -62,9 +62,11 @@ _LLANO_ALL_DAY: list[TimeBlock] = [
     TimeBlock(time(0, 0), time(0, 0), TariffPeriod.LLANO),
 ]
 
-# TRIPLE (Triple Horario) weekends and holidays are all-valle (cheapest tier).
-_VALLE_ALL_DAY: list[TimeBlock] = [
-    TimeBlock(time(0, 0), time(0, 0), TariffPeriod.VALLE),
+# TRIPLE (Triple Horario) weekends and holidays have no punta:
+# valle (00:00–07:00) and llano (07:00–24:00).
+_TRIPLE_WEEKEND_HOLIDAY: list[TimeBlock] = [
+    TimeBlock(time(0, 0), time(7, 0), TariffPeriod.VALLE),
+    TimeBlock(time(7, 0), time(0, 0), TariffPeriod.LLANO),
 ]
 
 # Doble Horario workday: llano (00:00–18:00, 22:00–24:00) and punta (18:00–22:00).
@@ -143,8 +145,8 @@ UTE_SCHEDULE_RANGES: dict[ContractType, list[ScheduleRange]] = {
             start=date(2000, 1, 1),
             end=date(2099, 12, 31),
             workday_blocks=_TRIPLE_WORKDAY,
-            weekend_blocks=_VALLE_ALL_DAY,
-            holiday_blocks=_VALLE_ALL_DAY,
+            weekend_blocks=_TRIPLE_WEEKEND_HOLIDAY,
+            holiday_blocks=_TRIPLE_WEEKEND_HOLIDAY,
         ),
     ],
 }

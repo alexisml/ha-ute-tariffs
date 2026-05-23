@@ -41,7 +41,7 @@
 |-------|----------|---------|-------------|
 | **Residential contract type** | Yes | `simple` | Your UTE plan: `simple`, `double`, or `triple`. |
 | **Punta (peak) window** | No | `18-22` | 4-hour peak window for Double and Triple contracts. Choose `17-21`, `18-22`, or `19-23` to match your UTE plan. Ignored for Simple. |
-| **Apply national holidays** | No | `true` | When enabled, Uruguayan national holidays use the holiday schedule (all-llano for Double; all-valle for Triple) instead of the weekday schedule. |
+| **Apply national holidays** | No | `true` | When enabled, Uruguayan national holidays use the holiday schedule (all-llano for Double; for Triple: valle `00:00–07:00`, llano `07:00–00:00`) instead of the weekday schedule. |
 | **Monthly consumption entity** | No | *(low tier)* | Entity ID of a sensor that reports your monthly kWh consumption (e.g. a utility meter). Used only for the Simple contract to select the consumption tier (0–100, 101–600, or 601+ kWh/month). If left blank or the entity is unavailable, the low tier (0–100 kWh/month) is used. |
 
 ---

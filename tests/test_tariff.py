@@ -401,6 +401,14 @@ def test_triple_contract_uses_canonical_defaults() -> None:
     snap = calc.snapshot(datetime(2026, 4, 6, 10, 0, tzinfo=_UY))
     assert snap.current_period == TariffPeriod.LLANO
 
+    # 2026-04-11 Saturday 10:00 → llano in canonical TRIPLE weekend schedule (07:00–00:00)
+    weekend_snap = calc.snapshot(datetime(2026, 4, 11, 10, 0, tzinfo=_UY))
+    assert weekend_snap.current_period == TariffPeriod.LLANO
+
+    # 2026-05-01 is a national holiday: 10:00 should also be llano (no punta, but not all-valle)
+    holiday_snap = calc.snapshot(datetime(2026, 5, 1, 10, 0, tzinfo=_UY))
+    assert holiday_snap.current_period == TariffPeriod.LLANO
+
 
 def test_national_holidays_disabled() -> None:
     """With use_national_holidays=False a public holiday uses the workday schedule."""
@@ -744,29 +752,26 @@ def test_snapshot_iva_rate_zero_means_no_markup() -> None:
 
 
 def test_next_change_skips_same_period_weekend_boundaries() -> None:
-    """Saturday→Sunday boundary must be skipped; next REAL change is Monday 00:00 (TRIPLE).
+    """TRIPLE weekend must transition at midnight when llano changes to valle.
 
-    In a TRIPLE contract, both Saturday and Sunday are all-valle.  The scan-forward
-    fix should skip the Saturday midnight boundary (still valle on Sunday) and return
-    Monday 00:00 when the first workday block (LLANO) starts.
+    Canonical TRIPLE weekend/holiday schedule has no punta: valle (00:00–07:00)
+    and llano (07:00–00:00).  Starting Saturday 15:00 (llano), the next change
+    is Sunday 00:00 when valle begins.
     """
     calc = TariffCalculator(
         contract_type=ContractType.TRIPLE,
         price_ranges=_price_ranges(),
         schedule_ranges=_make_schedule(
             "00:00-07:00:valle,07:00-17:00:llano,17:00-21:00:punta,21:00-00:00:llano",
-            weekend_raw="00:00-00:00:valle",
+            weekend_raw="00:00-07:00:valle,07:00-00:00:llano",
             dp=TariffPeriod.LLANO,
         ),
     )
-    # 2026-04-11 is Saturday at 15:00 → all-valle
+    # 2026-04-11 is Saturday at 15:00 → weekend llano
     snap = calc.snapshot(datetime(2026, 4, 11, 15, 0, tzinfo=_UY))
-    assert snap.current_period == TariffPeriod.VALLE
-    # Skip Saturday midnight (Sunday is also all-valle), then skip Sunday midnight
-    # (Monday 00:00–07:00 is also VALLE per workday blocks).
-    # Next REAL change: Monday 07:00 when LLANO starts.
-    assert snap.next_change_at == datetime(2026, 4, 13, 7, 0, tzinfo=_UY)
-    assert snap.next_period == TariffPeriod.LLANO
+    assert snap.current_period == TariffPeriod.LLANO
+    assert snap.next_change_at == datetime(2026, 4, 12, 0, 0, tzinfo=_UY)
+    assert snap.next_period == TariffPeriod.VALLE
 
 
 def test_next_change_double_weekend_to_workday() -> None:
